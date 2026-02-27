@@ -1,0 +1,3645 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Badge } from "../components/ui/badge";
+import { 
+  Search, 
+  Plus, 
+  Edit, 
+  Trash2, 
+  Eye, 
+  Image as ImageIcon, 
+  Package,
+  MonitorPlay,
+  Briefcase,
+  Calendar,
+  Newspaper,
+  Bell,
+  Smartphone,
+  MapPin,
+  Link2,
+  Download,
+  Loader2,
+  Tag,
+  X,
+  BookOpen,
+  ThumbsUp,
+  HelpCircle,
+  Zap,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "../components/ui/dialog";
+import { Label } from "../components/ui/label";
+import { Textarea } from "../components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../components/ui/table";
+import { Switch } from "../components/ui/switch";
+
+// 广告位数据
+const mockBanners = [
+  {
+    id: 1,
+    title: "春季新品促销",
+    position: "首页轮播",
+    image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800",
+    link: "/products/spring-sale",
+    startDate: "2024-02-01",
+    endDate: "2024-03-31",
+    status: "active",
+    order: 1,
+  },
+  {
+    id: 2,
+    title: "理光打印机新品发布",
+    position: "首页轮播",
+    image: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=800",
+    link: "/products/new-printers",
+    startDate: "2024-02-10",
+    endDate: "2024-04-30",
+    status: "active",
+    order: 2,
+  },
+  {
+    id: 3,
+    title: "企业解决方案",
+    position: "侧边栏",
+    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400",
+    link: "/solutions/enterprise",
+    startDate: "2024-01-15",
+    endDate: "2024-12-31",
+    status: "active",
+    order: 1,
+  },
+  {
+    id: 4,
+    title: "理光中国2024开年钜惠",
+    position: "开屏广告",
+    image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1080",
+    link: "/promotions/new-year-2024",
+    startDate: "2024-02-01",
+    endDate: "2024-02-29",
+    status: "active",
+    order: 1,
+    duration: 5,
+    skippable: true,
+    frequency: 1,
+  },
+];
+
+// 案例库数据
+const mockCases = [
+  {
+    id: 1,
+    title: "某大型制造企业数字化转型案例",
+    customer: "上海某某制造集团",
+    industry: "制造业",
+    solution: "智能文档管理系统",
+    products: "RICOH IM C6000 × 20台",
+    createTime: "2024-01-20",
+    thumbnail: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400",
+    status: "published",
+    tags: ["数字化转型", "智能制造", "文档管理", "大型企业"],
+  },
+  {
+    id: 2,
+    title: "金融行业高安全打印解决方案",
+    customer: "北京某某银行",
+    industry: "金融业",
+    solution: "安全打印解决方案",
+    products: "RICOH MP C5504exSP × 50台",
+    createTime: "2024-01-18",
+    thumbnail: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400",
+    status: "published",
+    tags: ["金融", "安全打印", "信息安全", "银行"],
+  },
+  {
+    id: 3,
+    title: "教育行业智慧校园建设",
+    customer: "广州某某大学",
+    industry: "教育",
+    solution: "智慧校园打印方案",
+    products: "RICOH IM C3000 × 100台",
+    createTime: "2024-01-15",
+    thumbnail: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400",
+    status: "published",
+    tags: ["教育", "智慧校园", "高校", "批量部署"],
+  },
+];
+
+// 市场活动数据
+const mockActivities = [
+  {
+    id: 1,
+    title: "2024春季新品发布会",
+    type: "线下活动",
+    location: "上海国际会展中心",
+    startDate: "2024-03-15",
+    endDate: "2024-03-15",
+    participants: 500,
+    budget: 200000,
+    status: "upcoming",
+    thumbnail: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400",
+    tags: ["新品发布", "线下活动", "2024", "上海"],
+  },
+  {
+    id: 2,
+    title: "打印机维护知识在线研讨会",
+    type: "线上活动",
+    location: "在线直播",
+    startDate: "2024-02-25",
+    endDate: "2024-02-25",
+    participants: 1200,
+    budget: 50000,
+    status: "ongoing",
+    thumbnail: "https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=400",
+    tags: ["在线研讨会", "技术培训", "维护保养", "直播"],
+  },
+  {
+    id: 3,
+    title: "企业数字化转型峰会",
+    type: "线下活动",
+    location: "北京国家会议中心",
+    startDate: "2024-01-20",
+    endDate: "2024-01-21",
+    participants: 800,
+    budget: 300000,
+    status: "completed",
+    thumbnail: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400",
+    tags: ["峰会", "数字化转型", "行业交流", "北京"],
+  },
+];
+
+// 新闻内容数据
+const mockNews = [
+  {
+    id: 1,
+    title: "理光中国发布2024年度战略规划",
+    category: "公司动态",
+    author: "张三",
+    publishDate: "2024-02-15",
+    views: 3520,
+    status: "published",
+    thumbnail: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400",
+    tags: ["战略规划", "公司新闻", "2024", "发展方向"],
+  },
+  {
+    id: 2,
+    title: "理光荣获2023年度最佳办公设备供应商",
+    category: "行业荣誉",
+    author: "李四",
+    publishDate: "2024-02-10",
+    views: 2890,
+    status: "published",
+    thumbnail: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400",
+    tags: ["行业荣誉", "奖项", "品牌认可", "办公设备"],
+  },
+  {
+    id: 3,
+    title: "理光新一代智能打印机技术解析",
+    category: "产品新闻",
+    author: "王五",
+    publishDate: "2024-02-05",
+    views: 4120,
+    status: "published",
+    thumbnail: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=400",
+    tags: ["产品技术", "智能打印", "技术解析", "创新"],
+  },
+];
+
+// 通知推送数据
+const mockNotifications = [
+  {
+    id: 1,
+    title: "系统维护通知",
+    content: "系统将于2024年2月20日 02:00-06:00进行维护升级",
+    type: "title",
+    notificationType: "system",
+    target: "all_users",
+    sendTime: "2024-02-18 10:00:00",
+    status: "sent",
+    readCount: 1250,
+    totalCount: 1500,
+    image: "",
+    link: "",
+    enableLink: false,
+  },
+  {
+    id: 2,
+    title: "新产品上线通知",
+    content: "RICOH IM C8000系列新品已上架，欢迎咨询。我们为您提供专业的办公解决方案，包括高速打印、智能扫描等多项功能。",
+    type: "content",
+    notificationType: "marketing",
+    target: "dealers",
+    sendTime: "2024-02-15 09:00:00",
+    status: "sent",
+    readCount: 180,
+    totalCount: 200,
+    image: "",
+    link: "/products/ricoh-im-c8000",
+    enableLink: true,
+  },
+  {
+    id: 3,
+    title: "春季大促活动",
+    content: "春季大促即将开始，敬请期待",
+    type: "image",
+    notificationType: "marketing",
+    target: "customers",
+    sendTime: "",
+    status: "draft",
+    readCount: 0,
+    totalCount: 0,
+    image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800",
+    link: "/activities/spring-sale-2024",
+    enableLink: true,
+  },
+];
+
+// 用户指南数据 (RICOH产品使用TIPS)
+const mockUserGuides = [
+  {
+    id: 1,
+    title: "如何设置双面打印节省纸张",
+    product: "RICOH IM C系列",
+    category: "基础操作",
+    difficulty: "简单",
+    content: "双面打印是节省纸张和降低成本的有效方法。以下是设置步骤：\n\n1. 打开打印机控制面板\n2. 选择【设置】→【打印设置】\n3. 找到【双面打印】选项并启用\n4. 选择装订边（长边或短边）\n5. 点击【应用】保存设置\n\n💡 小贴士：设置默认双面打印可节省高达50%的纸张成本。",
+    views: 1520,
+    likes: 89,
+    helpful: 156,
+    createTime: "2024-02-01",
+    updateTime: "2024-02-15",
+    status: "published",
+    thumbnail: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=400",
+    tags: ["节能环保", "双面打印", "成本节约", "基础设置"],
+  },
+  {
+    id: 2,
+    title: "定期清洁打印头保持最佳打印质量",
+    product: "RICOH MP系列",
+    category: "维护保养",
+    difficulty: "简单",
+    content: "定期清洁打印头可以确保打印质量，避免出现条纹或污点。\n\n清洁步骤：\n1. 打开前盖板，取出墨盒\n2. 使用专用清洁布轻轻擦拭打印头\n3. 等待5分钟使其完全干燥\n4. 重新安装墨盒并关闭盖板\n5. 运行打印头清洁程序：【设置】→【维护】→【清洁打印头】\n\n⚠️ 注意：每月至少清洁一次，确保最佳打印效果。",
+    views: 2340,
+    likes: 145,
+    helpful: 201,
+    createTime: "2024-01-28",
+    updateTime: "2024-02-10",
+    status: "published",
+    thumbnail: "https://images.unsplash.com/photo-1612814824743-c760091da7f6?w=400",
+    tags: ["维护保养", "打印质量", "清洁", "定期维护"],
+  },
+  {
+    id: 3,
+    title: "快速解决卡纸问题",
+    product: "全系列",
+    category: "故障排除",
+    difficulty: "中等",
+    content: "卡纸是打印机常见问题，按以下步骤可快速解决：\n\n排查步骤：\n1. 关闭打印机电源\n2. 打开所有可能卡纸的位置（进纸器、出纸槽、后盖板）\n3. 轻轻取出卡住的纸张（沿出纸方向拉）\n4. 检查是否有纸屑残留\n5. 合上所有盖板，重新开机\n\n预防措施：\n• 使用合格纸张（70-90g/m²）\n• 纸张不要装得太满\n• 保持纸张干燥\n• 定期清洁进纸滚轮",
+    views: 3850,
+    likes: 198,
+    helpful: 342,
+    createTime: "2024-01-25",
+    updateTime: "2024-02-18",
+    status: "published",
+    thumbnail: "https://images.unsplash.com/photo-1728722740555-9c523d21bccd?w=400",
+    tags: ["故障排除", "卡纸", "常见问题", "维修指南"],
+  },
+  {
+    id: 4,
+    title: "使用扫描到邮件功能提高效率",
+    product: "RICOH IM C系列",
+    category: "高级功能",
+    difficulty: "中等",
+    content: "扫描到邮件功能让您可以直接将扫描文件发送到指定邮箱。\n\n配置步骤：\n1. 进入【设置】→【网络】→【邮件设置】\n2. 配置SMTP服务器信息\n3. 输入发送邮箱地址和密码\n4. 保存并测试连接\n\n使用方法：\n1. 将文件放在扫描台上\n2. 点击【扫描】→【扫描到邮件】\n3. 输入收件人地址\n4. 选择文件格式（PDF/JPG）\n5. 点击【发送】\n\n💡 提示：可设置常用联系人列表，提高操作效率。",
+    views: 1680,
+    likes: 112,
+    helpful: 178,
+    createTime: "2024-02-05",
+    updateTime: "2024-02-12",
+    status: "published",
+    thumbnail: "https://images.unsplash.com/photo-1760126722852-2fafd56ceebb?w=400",
+    tags: ["高级功能", "扫描", "邮件", "办公效率"],
+  },
+  {
+    id: 5,
+    title: "设置安全打印保护文档隐私",
+    product: "RICOH MP系列",
+    category: "安全功能",
+    difficulty: "中等",
+    content: "安全打印功能可确保文档只有输入密码后才能打印。\n\n设置方法：\n1. 在打印对话框中选择【安全打印】\n2. 设置4位数PIN码\n3. 输入文档名称（可选）\n4. 点击【打印】\n\n打印文档：\n1. 到打印机前\n2. 在控制面板选择【安全打印】\n3. 输入您的用户名\n4. 输入PIN码\n5. 选择文档并打印\n\n🔒 适用场景：财务报表、合同文件、机密资料等。",
+    views: 1290,
+    likes: 78,
+    helpful: 134,
+    createTime: "2024-02-08",
+    updateTime: "2024-02-08",
+    status: "published",
+    thumbnail: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=400",
+    tags: ["安全功能", "隐私保护", "安全打印", "企业应用"],
+  },
+  {
+    id: 6,
+    title: "优化打印速度的5个技巧",
+    product: "全系列",
+    category: "性能优化",
+    difficulty: "简单",
+    content: "以下技巧可以显著提升打印速度：\n\n1. 使用草稿模式\n   • 适用于内部文档和草稿\n   • 可节省墨粉并加快速度\n\n2. 批量打印\n   • 合并多个小任务为一个大任务\n   • 减少预热时间\n\n3. 选择合适分辨率\n   • 文本文档：600dpi\n   • 图片文档：1200dpi\n\n4. 关闭不必要的功能\n   • 不需要时关闭双面打印\n   • 禁用页眉页脚\n\n5. 定期维护\n   • 清洁打印机\n   • 更新驱动程序\n\n⚡ 效果：最高可提升30%的打印速度。",
+    views: 2150,
+    likes: 167,
+    helpful: 234,
+    createTime: "2024-02-12",
+    updateTime: "2024-02-20",
+    status: "published",
+    thumbnail: "https://images.unsplash.com/photo-1612814824743-c760091da7f6?w=400",
+    tags: ["性能优化", "打印速度", "效率提升", "实用技巧"],
+  },
+];
+
+// 收集表单数据
+const mockForms = [
+  {
+    id: 1,
+    name: "产品咨询表单",
+    type: "inquiry",
+    description: "用于收集客户产品咨询信息",
+    fields: [
+      { id: 1, label: "姓名", type: "text", required: true },
+      { id: 2, label: "联系电话", type: "phone", required: true },
+      { id: 3, label: "公司名称", type: "text", required: false },
+      { id: 4, label: "咨询产品", type: "select", required: true, options: ["打印机", "复印机", "扫描仪"] },
+      { id: 5, label: "详细需求", type: "textarea", required: false },
+    ],
+    submissions: 350,
+    createTime: "2024-01-10",
+    status: "active",
+  },
+  {
+    id: 2,
+    name: "售后服务申请表",
+    type: "service",
+    description: "用���收集客户售后服务需求",
+    fields: [
+      { id: 1, label: "姓名", type: "text", required: true },
+      { id: 2, label: "联系电话", type: "phone", required: true },
+      { id: 3, label: "设备型号", type: "text", required: true },
+      { id: 4, label: "购买日期", type: "date", required: true },
+      { id: 5, label: "故障描述", type: "textarea", required: true },
+      { id: 6, label: "紧急程度", type: "select", required: true, options: ["紧急", "一般", "不急"] },
+      { id: 7, label: "预约时间", type: "datetime", required: false },
+      { id: 8, label: "附件上传", type: "file", required: false },
+    ],
+    submissions: 128,
+    createTime: "2024-01-15",
+    status: "active",
+  },
+  {
+    id: 3,
+    name: "经销商加盟申请",
+    type: "partnership",
+    description: "用于收集经销商加盟意向信息",
+    fields: [
+      { id: 1, label: "公司名称", type: "text", required: true },
+      { id: 2, label: "联系人", type: "text", required: true },
+      { id: 3, label: "联系电话", type: "phone", required: true },
+      { id: 4, label: "电子邮箱", type: "email", required: true },
+      { id: 5, label: "公司地址", type: "text", required: true },
+      { id: 6, label: "注册资金（万元）", type: "number", required: true },
+      { id: 7, label: "经营范围", type: "textarea", required: true },
+      { id: 8, label: "代理区域", type: "text", required: true },
+      { id: 9, label: "团队规模", type: "select", required: true, options: ["10人以下", "10-50人", "50-100人", "100人以上"] },
+      { id: 10, label: "行业经验（年）", type: "number", required: true },
+      { id: 11, label: "营业执照", type: "file", required: true },
+      { id: 12, label: "其他说明", type: "textarea", required: false },
+    ],
+    submissions: 45,
+    createTime: "2024-01-20",
+    status: "active",
+  },
+  {
+    id: 4,
+    name: "市场活动报名表",
+    type: "event",
+    description: "用于收集市场活动报名信息",
+    fields: [
+      { id: 1, label: "姓名", type: "text", required: true },
+      { id: 2, label: "手机号", type: "phone", required: true },
+      { id: 3, label: "邮箱", type: "email", required: true },
+      { id: 4, label: "公司/组织", type: "text", required: false },
+      { id: 5, label: "职位", type: "text", required: false },
+      { id: 6, label: "参会人数", type: "number", required: true },
+    ],
+    submissions: 520,
+    createTime: "2024-02-01",
+    status: "active",
+  },
+];
+
+// 理光产品库
+const ricohProducts = [
+  {
+    id: 101,
+    title: "RICOH MP C3004exSP",
+    type: "product",
+    category: "彩色多功能打印机",
+    author: "理光官方",
+    status: "published",
+    views: 3520,
+    createTime: "2024-01-20",
+    thumbnail: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=400",
+    productCode: "MP-C3004exSP",
+    printSpeed: "30页/分钟",
+    features: "高速彩色打印、复印���扫描、传真一体机，支持移动打印和云服务",
+    price: "面议",
+  },
+  {
+    id: 102,
+    title: "RICOH MP C3504exSP",
+    type: "product",
+    category: "彩色多功能打印机",
+    author: "理光官方",
+    status: "published",
+    views: 3180,
+    createTime: "2024-01-20",
+    thumbnail: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=400",
+    productCode: "MP-C3504exSP",
+    printSpeed: "35页/分钟",
+    features: "中高速彩色多功能机，适合中型办公室，支持多种纸张处理功能",
+    price: "面议",
+  },
+  {
+    id: 103,
+    title: "RICOH IM C4500",
+    type: "product",
+    category: "彩色多功能打印机",
+    author: "理光官方",
+    status: "published",
+    views: 3200,
+    createTime: "2024-01-22",
+    thumbnail: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=400",
+    productCode: "IM-C4500",
+    printSpeed: "45页/分钟",
+    features: "智能工作流程自动化，增强的安全功能，节能环保设计",
+    price: "面议",
+  },
+  {
+    id: 104,
+    title: "RICOH IM C6000",
+    type: "product",
+    category: "彩色多功能打印机",
+    author: "理光官方",
+    status: "published",
+    views: 2980,
+    createTime: "2024-01-22",
+    thumbnail: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=400",
+    productCode: "IM-C6000",
+    printSpeed: "60页/分钟",
+    features: "高端智能多功能机，支持高级色彩管理和专业印刷功能",
+    price: "面议",
+  },
+];
+
+const mockTrainingCourses = [
+  {
+    id: 1,
+    title: "RICOH IM C Series Basics",
+    category: "Basic Operation",
+    level: "Beginner",
+    durationHours: 4,
+    instructor: "Trainer A",
+    enrolledCount: 128,
+    passRate: 92,
+    status: "active",
+    updateTime: "2024-02-20",
+  },
+  {
+    id: 2,
+    title: "Maintenance and Troubleshooting",
+    category: "Maintenance",
+    level: "Intermediate",
+    durationHours: 6,
+    instructor: "Trainer B",
+    enrolledCount: 86,
+    passRate: 84,
+    status: "active",
+    updateTime: "2024-02-18",
+  },
+  {
+    id: 3,
+    title: "Channel Sales Consultant Advanced",
+    category: "Sales",
+    level: "Advanced",
+    durationHours: 8,
+    instructor: "Trainer C",
+    enrolledCount: 52,
+    passRate: 76,
+    status: "inactive",
+    updateTime: "2024-02-10",
+  },
+];
+
+const mockCertifications = [
+  {
+    id: 1,
+    name: "RICOH Product Consultant (Junior)",
+    examCode: "RCP-101",
+    relatedCourse: "RICOH IM C Series Basics",
+    questionCount: 50,
+    passScore: 60,
+    examDurationMin: 60,
+    participants: 240,
+    passRate: 88,
+    status: "active",
+    updateTime: "2024-02-19",
+  },
+  {
+    id: 2,
+    name: "RICOH Maintenance Engineer (Mid)",
+    examCode: "RME-201",
+    relatedCourse: "Maintenance and Troubleshooting",
+    questionCount: 80,
+    passScore: 70,
+    examDurationMin: 90,
+    participants: 132,
+    passRate: 81,
+    status: "active",
+    updateTime: "2024-02-16",
+  },
+  {
+    id: 3,
+    name: "Channel Sales Consultant (Senior)",
+    examCode: "RSC-301",
+    relatedCourse: "Channel Sales Consultant Advanced",
+    questionCount: 100,
+    passScore: 75,
+    examDurationMin: 120,
+    participants: 68,
+    passRate: 73,
+    status: "inactive",
+    updateTime: "2024-02-09",
+  },
+];
+
+const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" }> = {
+  active: { label: "启用中", variant: "default" },
+  inactive: { label: "已停用", variant: "secondary" },
+  published: { label: "已发布", variant: "default" },
+  draft: { label: "草稿", variant: "secondary" },
+  upcoming: { label: "即将开始", variant: "secondary" },
+  ongoing: { label: "进行中", variant: "default" },
+  completed: { label: "已完成", variant: "secondary" },
+  sent: { label: "已发送", variant: "default" },
+};
+
+type CaseItem = (typeof mockCases)[number];
+type ActivityItem = (typeof mockActivities)[number];
+type NewsItem = (typeof mockNews)[number];
+type ProductItem = (typeof ricohProducts)[number];
+type UserGuideItem = (typeof mockUserGuides)[number];
+type TrainingCourseItem = (typeof mockTrainingCourses)[number];
+type CertificationItem = (typeof mockCertifications)[number];
+
+export default function ContentManagement() {
+  const [mainTab, setMainTab] = useState("banners");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [bannerDialogOpen, setBannerDialogOpen] = useState(false);
+  const [activityDialogOpen, setActivityDialogOpen] = useState(false);
+  const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
+  const [notificationType, setNotificationType] = useState("title");
+  const [enableLink, setEnableLink] = useState(false);
+  const [bannerPosition, setBannerPosition] = useState("homepage");
+  const [formDialogOpen, setFormDialogOpen] = useState(false);
+  const [formFields, setFormFields] = useState<Array<{id: number, label: string, type: string, required: boolean, options?: string[]}>>([]);
+  const [banners, setBanners] = useState(mockBanners);
+  const [cases, setCases] = useState(mockCases);
+  const [activities, setActivities] = useState(mockActivities);
+  const [news, setNews] = useState(mockNews);
+  const [notifications, setNotifications] = useState(mockNotifications);
+  const [forms, setForms] = useState(mockForms);
+  const [products, setProducts] = useState(ricohProducts);
+  const [productSearchTerm, setProductSearchTerm] = useState("");
+  const [userGuides, setUserGuides] = useState(mockUserGuides);
+  const [trainingCourses, setTrainingCourses] = useState(mockTrainingCourses);
+  const [certifications, setCertifications] = useState(mockCertifications);
+  const [guideSearchTerm, setGuideSearchTerm] = useState("");
+  const [courseSearchTerm, setCourseSearchTerm] = useState("");
+  const [certSearchTerm, setCertSearchTerm] = useState("");
+  const [guideDialogOpen, setGuideDialogOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>("all");
+  
+  // 标签管理状态
+  const [selectedTags, setSelectedTags] = useState<Record<string, string[]>>({
+    cases: [],
+    activities: [],
+    news: [],
+    guides: [],
+  });
+  const [tagInput, setTagInput] = useState("");
+  const [currentTags, setCurrentTags] = useState<string[]>([]);
+  
+  // URL导入相关状态
+  const [importUrl, setImportUrl] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
+  const [importSuccess, setImportSuccess] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "",
+    content: "",
+    summary: "",
+    author: "",
+    customer: "",
+    industry: "",
+    solution: "",
+    category: "",
+  });
+
+  // 初始化产品数据 - 更新图片和可见性
+  useEffect(() => {
+    const updatedProducts = ricohProducts.map((product, index) => {
+      const printerImages = [
+        "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlbnRlcnByaXNlJTIwcHJpbnRlciUyMGVxdWlwbWVudHxlbnwxfHx8fDE3NzIxMTk2NDJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+        "https://images.unsplash.com/photo-1612814824743-c760091da7f6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2xvciUyMGxhc2VyJTIwcHJpbnRlcnxlbnwxfHx8fDE3NzIxMTk2NDJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+        "https://images.unsplash.com/photo-1728722740555-9c523d21bccd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBwcmludGVyJTIwbWFjaGluZXxlbnwxfHx8fDE3NzIxMTk2NDJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+        "https://images.unsplash.com/photo-1760126722852-2fafd56ceebb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvZmZpY2UlMjBwcmludGVyJTIwcmljb2glMjBicmFuZHxlbnwxfHx8fDE3NzIxMTk2NDF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      ];
+      return {
+        ...product,
+        thumbnail: printerImages[index] || printerImages[0],
+        visible: index < 3, // 前3个可见，第4个不可见
+      };
+    });
+    setProducts(updatedProducts);
+  }, []);
+
+  const filteredProducts = products.filter((product) =>
+    product.title.toLowerCase().includes(productSearchTerm.toLowerCase()) ||
+    product.productCode.toLowerCase().includes(productSearchTerm.toLowerCase())
+  );
+
+  const filteredGuides = userGuides.filter((guide) => {
+    const matchSearch = guide.title.toLowerCase().includes(guideSearchTerm.toLowerCase()) ||
+                        guide.product.toLowerCase().includes(guideSearchTerm.toLowerCase());
+    const matchCategory = selectedCategory === "all" || guide.category === selectedCategory;
+    const matchDifficulty = selectedDifficulty === "all" || guide.difficulty === selectedDifficulty;
+    const matchTags = !selectedTags.guides || selectedTags.guides.length === 0 || 
+                      selectedTags.guides.some((tag: string) => guide.tags?.includes(tag));
+    
+    return matchSearch && matchCategory && matchDifficulty && matchTags;
+  });
+
+  const filteredCourses = trainingCourses.filter((course) =>
+    course.title.toLowerCase().includes(courseSearchTerm.toLowerCase()) ||
+    course.category.toLowerCase().includes(courseSearchTerm.toLowerCase()) ||
+    course.instructor.toLowerCase().includes(courseSearchTerm.toLowerCase())
+  );
+
+  const filteredCertifications = certifications.filter((cert) =>
+    cert.name.toLowerCase().includes(certSearchTerm.toLowerCase()) ||
+    cert.examCode.toLowerCase().includes(certSearchTerm.toLowerCase()) ||
+    cert.relatedCourse.toLowerCase().includes(certSearchTerm.toLowerCase())
+  );
+
+  const handleDelete = (id: number, type: string) => {
+    switch(type) {
+      case 'banner':
+        setBanners(banners.filter(item => item.id !== id));
+        break;
+      case 'case':
+        setCases(cases.filter(item => item.id !== id));
+        break;
+      case 'activity':
+        setActivities(activities.filter(item => item.id !== id));
+        break;
+      case 'news':
+        setNews(news.filter(item => item.id !== id));
+        break;
+      case 'notification':
+        setNotifications(notifications.filter(item => item.id !== id));
+        break;
+      case 'form':
+        setForms(forms.filter(item => item.id !== id));
+        break;
+      case 'guide':
+        setUserGuides(userGuides.filter(item => item.id !== id));
+        break;
+      case 'course':
+        setTrainingCourses(trainingCourses.filter(item => item.id !== id));
+        break;
+      case 'cert':
+        setCertifications(certifications.filter(item => item.id !== id));
+        break;
+    }
+  };
+
+  // 切换产品可见性
+  const toggleProductVisibility = (productId: number) => {
+    setProducts(products.map(product => 
+      product.id === productId 
+        ? { ...product, visible: !product.visible }
+        : product
+    ));
+  };
+
+  // 模拟URL导入功能
+  const handleImportFromUrl = async () => {
+    if (!importUrl) return;
+    
+    setIsImporting(true);
+    setImportSuccess(false);
+
+    // 模拟网络请求延迟
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // 根据当前标签页判断导入类型
+    let mockData: Partial<typeof formData> = {};
+    
+    if (mainTab === "cases") {
+      // 案例库模拟数据
+      mockData = {
+        title: "数字化转型成功案例：某知名企业的智慧办公实践",
+        customer: "某知名科技公司",
+        industry: "科技",
+        solution: "全方位数字化办公解决方案",
+        content: "该企业通过部署理光智能打印解决方案，实现了文档管理数字化、打印流程自动化，大幅提升了办公效率。项目实施后，打印成本降低30%，文档处理效率提升50%，获得了客户的高度认可。\n\n项目背景：\n随着企业规模的快速扩张，传统的打印管理方式已无法满足业务需求。文档分散存储、打印流程繁琐、成本居高不下等问题日益凸显。\n\n解决方案：\n我们为客户提供了包括智能多功能打印机、文档管理系统、移动打印平台在内的一体化解决方案。\n\n实施效果：\n1. 打印成本降低30%\n2. 文档处理效率提升50%\n3. 纸张使用量减少40%\n4. 员工满意度显著提高",
+        summary: "通过部署理光智能打印解决方案，该企业实现了文档管理数字化，打印成本降低30%，效率提升50%。",
+      };
+    } else if (mainTab === "news") {
+      // 新闻内容模拟数据
+      mockData = {
+        title: "办公数字化转型趋势：智能打印引领未来办公新模式",
+        author: "行业观察员",
+        category: "行业动态",
+        content: "随着数字化转型的深入推进，企业办公方式正在发生深刻变革。智能打印技术作为数字化办公的重要组成部分，正在重新定义现代办公模式。\n\n一、数字化办公的新趋势\n\n近年来，云计算、人工智能、物联网等新兴技术的快速发展，为办公数字化转型提供了强大的技术支撑。企业不再满足于简单的电子化，而是追求智能化、自动化的办公体验。\n\n二、智能打印的核心价值\n\n1. 提高效率：自动化打印流程，减少人工干预\n2. 降低成本：精准控制打印行为，优化资源配置\n3. 增强安全：多层次权限管理，保护敏感信息\n4. 支持移动：随时随地打印，满足灵活办公需求\n\n三、行业应用案例\n\n在金融、教育、医疗等行业，智能打印解决方案已经得到广泛应用。某银行通过部署智能打印系统，实现了打印行为全程可追溯，有效防范了信息泄露风险。\n\n四、未来展望\n\n随着技术的不断进步，智能打印将与更多办公场景深度融合，成为企业数字化转型的重要助力。",
+        summary: "智能打印技术正在引领办公数字化转型新趋势，通过提高效率、降低成本、增强安全等方式，重新定义现代办公模式。",
+      };
+    }
+
+    // 更新表单数据
+    setFormData(mockData);
+    setIsImporting(false);
+    setImportSuccess(true);
+
+    // 3秒后清除成功提示
+    setTimeout(() => setImportSuccess(false), 3000);
+  };
+
+  // 重置导入状态
+  const resetImport = () => {
+    setImportUrl("");
+    setImportSuccess(false);
+    setFormData({
+      title: "",
+      content: "",
+      summary: "",
+      author: "",
+      customer: "",
+      industry: "",
+      solution: "",
+      category: "",
+    });
+  };
+
+  // 打开对话框时重置状态
+  const handleOpenDialog = () => {
+    resetImport();
+    setDialogOpen(true);
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>内容管理</CardTitle>
+          <p className="text-sm text-gray-600">管理网站和移动端的各类内容、活动和推送</p>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={mainTab} onValueChange={setMainTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-10">
+              <TabsTrigger value="banners" className="flex items-center gap-2">
+                <MonitorPlay className="h-4 w-4" />
+                广告位
+              </TabsTrigger>
+              <TabsTrigger value="cases" className="flex items-center gap-2">
+                <Briefcase className="h-4 w-4" />
+                案例库
+              </TabsTrigger>
+              <TabsTrigger value="activities" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                市场活动
+              </TabsTrigger>
+              <TabsTrigger value="news" className="flex items-center gap-2">
+                <Newspaper className="h-4 w-4" />
+                新闻内容
+              </TabsTrigger>
+              <TabsTrigger value="notifications" className="flex items-center gap-2">
+                <Bell className="h-4 w-4" />
+                通知推送
+              </TabsTrigger>
+              <TabsTrigger value="forms" className="flex items-center gap-2">
+                <Smartphone className="h-4 w-4" />
+                收集表单
+              </TabsTrigger>
+              <TabsTrigger value="products" className="flex items-center gap-2">
+                <Package className="h-4 w-4" />
+                产品库
+              </TabsTrigger>
+              <TabsTrigger value="guides" className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                用户指南
+              </TabsTrigger>
+              <TabsTrigger value="courses" className="flex items-center gap-2">
+                <Zap className="h-4 w-4" />
+                培训课程
+              </TabsTrigger>
+              <TabsTrigger value="certifications" className="flex items-center gap-2">
+                <HelpCircle className="h-4 w-4" />
+                考试认证
+              </TabsTrigger>
+            </TabsList>
+
+            {/* 广告位管理 */}
+            <TabsContent value="banners" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">广告位管理</h3>
+                  <p className="text-sm text-gray-600">管理网站首页、侧边栏等位置的广告横幅</p>
+                </div>
+                <Button onClick={() => setBannerDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  添加广告位
+                </Button>
+              </div>
+
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>缩略图</TableHead>
+                      <TableHead>标题</TableHead>
+                      <TableHead>投放位置</TableHead>
+                      <TableHead>特殊设置</TableHead>
+                      <TableHead>开始时间</TableHead>
+                      <TableHead>结束时间</TableHead>
+                      <TableHead>排序</TableHead>
+                      <TableHead>状态</TableHead>
+                      <TableHead className="text-center">操作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {banners.map((banner) => (
+                      <TableRow key={banner.id}>
+                        <TableCell>
+                          <img 
+                            src={banner.image} 
+                            alt={banner.title}
+                            className="w-24 h-12 object-cover rounded"
+                          />
+                        </TableCell>
+                        <TableCell className="font-medium">{banner.title}</TableCell>
+                        <TableCell>
+                          <Badge variant={banner.position === "开屏广告" ? "default" : "outline"}>
+                            {banner.position}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {banner.position === "开屏广告" ? (
+                            <div className="text-xs text-gray-600 space-y-1">
+                              <div>⏱️ {banner.duration}秒</div>
+                              <div>{banner.skippable ? "✅ 可跳过" : "❌ 不可跳过"}</div>
+                              <div>📊 每天{banner.frequency}次</div>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm">{banner.startDate}</TableCell>
+                        <TableCell className="text-sm">{banner.endDate}</TableCell>
+                        <TableCell>{banner.order}</TableCell>
+                        <TableCell>
+                          <Badge variant={statusMap[banner.status].variant}>
+                            {statusMap[banner.status].label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex justify-center gap-2">
+                            <Button variant="outline" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleDelete(banner.id, 'banner')}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+
+            {/* 案例库维护 */}
+            <TabsContent value="cases" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">案例库维护</h3>
+                  <p className="text-sm text-gray-600">管理客户成功案例和行业解决方案</p>
+                </div>
+                <Button onClick={() => handleOpenDialog()}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  添加案例
+                </Button>
+              </div>
+
+              {/* 标签快捷索引 */}
+              {cases.some((c: CaseItem) => c.tags && c.tags.length > 0) && (
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Tag className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-medium text-gray-700">标签快捷索引</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from(new Set(cases.flatMap((c: CaseItem) => c.tags || []))).map((tag: string) => {
+                      const isSelected = selectedTags.cases?.includes(tag);
+                      return (
+                        <Badge
+                          key={tag}
+                          variant={isSelected ? "default" : "outline"}
+                          className={`cursor-pointer transition-all ${
+                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
+                          }`}
+                          onClick={() => {
+                            const currentSelected = selectedTags.cases || [];
+                            setSelectedTags({
+                              ...selectedTags,
+                              cases: isSelected
+                                ? currentSelected.filter((t: string) => t !== tag)
+                                : [...currentSelected, tag]
+                            });
+                          }}
+                        >
+                          {tag}
+                          {isSelected && <X className="h-3 w-3 ml-1" />}
+                        </Badge>
+                      );
+                    })}
+                    {selectedTags.cases && selectedTags.cases.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedTags({ ...selectedTags, cases: [] })}
+                        className="h-6 text-xs"
+                      >
+                        清除筛选
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {cases
+                  .filter((caseItem: CaseItem) => {
+                    if (!selectedTags.cases || selectedTags.cases.length === 0) return true;
+                    return selectedTags.cases.some((tag: string) => caseItem.tags?.includes(tag));
+                  })
+                  .map((caseItem) => (
+                  <Card key={caseItem.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                    <div className="aspect-video bg-gray-100 relative">
+                      <img
+                        src={caseItem.thumbnail}
+                        alt={caseItem.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 right-2">
+                        <Badge>{caseItem.industry}</Badge>
+                      </div>
+                    </div>
+                    <CardContent className="p-4 space-y-3">
+                      <div>
+                        <h3 className="font-semibold mb-2">{caseItem.title}</h3>
+                        <div className="space-y-1 text-sm text-gray-600">
+                          <p><span className="font-medium">客户：</span>{caseItem.customer}</p>
+                          <p><span className="font-medium">方案：</span>{caseItem.solution}</p>
+                          <p><span className="font-medium">产品：</span>{caseItem.products}</p>
+                        </div>
+                      </div>
+
+                      {/* 标签显示 */}
+                      {caseItem.tags && caseItem.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 pt-2 border-t">
+                          {caseItem.tags.map((tag: string) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center justify-between pt-2 border-t">
+                        <span className="text-xs text-gray-500">{caseItem.createTime}</span>
+                        <Badge variant={statusMap[caseItem.status].variant}>
+                          {statusMap[caseItem.status].label}
+                        </Badge>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className="flex-1">
+                          <Edit className="h-4 w-4 mr-2" />
+                          编辑
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDelete(caseItem.id, 'case')}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            {/* 市场活动管理 */}
+            <TabsContent value="activities" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">市场活动管理</h3>
+                  <p className="text-sm text-gray-600">管理线上线下市场活动和研讨会</p>
+                </div>
+                <Button onClick={() => setActivityDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  创建活动
+                </Button>
+              </div>
+
+              {/* 标签快捷索引 */}
+              {activities.some((a: ActivityItem) => a.tags && a.tags.length > 0) && (
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Tag className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-medium text-gray-700">标签快捷索引</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from(new Set(activities.flatMap((a: ActivityItem) => a.tags || []))).map((tag: string) => {
+                      const isSelected = selectedTags.activities?.includes(tag);
+                      return (
+                        <Badge
+                          key={tag}
+                          variant={isSelected ? "default" : "outline"}
+                          className={`cursor-pointer transition-all ${
+                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
+                          }`}
+                          onClick={() => {
+                            const currentSelected = selectedTags.activities || [];
+                            setSelectedTags({
+                              ...selectedTags,
+                              activities: isSelected
+                                ? currentSelected.filter((t: string) => t !== tag)
+                                : [...currentSelected, tag]
+                            });
+                          }}
+                        >
+                          {tag}
+                          {isSelected && <X className="h-3 w-3 ml-1" />}
+                        </Badge>
+                      );
+                    })}
+                    {selectedTags.activities && selectedTags.activities.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedTags({ ...selectedTags, activities: [] })}
+                        className="h-6 text-xs"
+                      >
+                        清除筛选
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {activities
+                  .filter((activity: ActivityItem) => {
+                    if (!selectedTags.activities || selectedTags.activities.length === 0) return true;
+                    return selectedTags.activities.some((tag: string) => activity.tags?.includes(tag));
+                  })
+                  .map((activity) => (
+                  <Card key={activity.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                    <div className="aspect-video bg-gray-100 relative">
+                      <img
+                        src={activity.thumbnail}
+                        alt={activity.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 right-2">
+                        <Badge variant={statusMap[activity.status].variant}>
+                          {statusMap[activity.status].label}
+                        </Badge>
+                      </div>
+                    </div>
+                    <CardContent className="p-4 space-y-3">
+                      <div>
+                        <h3 className="font-semibold mb-2">{activity.title}</h3>
+                        <div className="space-y-1 text-sm text-gray-600">
+                          <p className="flex items-center gap-2">
+                            <Badge variant="outline">{activity.type}</Badge>
+                          </p>
+                          <p className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {activity.location}
+                          </p>
+                          <p><span className="font-medium">时间：</span>{activity.startDate}</p>
+                          <p><span className="font-medium">参与人数：</span>{activity.participants}人</p>
+                          <p><span className="font-medium">预算：</span>¥{activity.budget.toLocaleString()}</p>
+                        </div>
+                      </div>
+
+                      {/* 标签显示 */}
+                      {activity.tags && activity.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 pt-2 border-t">
+                          {activity.tags.map((tag: string) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex gap-2 pt-2 border-t">
+                        <Button variant="outline" size="sm" className="flex-1">
+                          <Edit className="h-4 w-4 mr-2" />
+                          编辑
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDelete(activity.id, 'activity')}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            {/* 新闻内容管理 */}
+            <TabsContent value="news" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">新闻内容管理</h3>
+                  <p className="text-sm text-gray-600">管理公司动态、行业新闻和产品资讯</p>
+                </div>
+                <Button onClick={() => handleOpenDialog()}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  发布新闻
+                </Button>
+              </div>
+
+              {/* 标签快捷索引 */}
+              {news.some((n: NewsItem) => n.tags && n.tags.length > 0) && (
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Tag className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-medium text-gray-700">标签快捷索引</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from(new Set(news.flatMap((n: NewsItem) => n.tags || []))).map((tag: string) => {
+                      const isSelected = selectedTags.news?.includes(tag);
+                      return (
+                        <Badge
+                          key={tag}
+                          variant={isSelected ? "default" : "outline"}
+                          className={`cursor-pointer transition-all ${
+                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
+                          }`}
+                          onClick={() => {
+                            const currentSelected = selectedTags.news || [];
+                            setSelectedTags({
+                              ...selectedTags,
+                              news: isSelected
+                                ? currentSelected.filter((t: string) => t !== tag)
+                                : [...currentSelected, tag]
+                            });
+                          }}
+                        >
+                          {tag}
+                          {isSelected && <X className="h-3 w-3 ml-1" />}
+                        </Badge>
+                      );
+                    })}
+                    {selectedTags.news && selectedTags.news.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedTags({ ...selectedTags, news: [] })}
+                        className="h-6 text-xs"
+                      >
+                        清除筛选
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {news
+                  .filter((newsItem: NewsItem) => {
+                    if (!selectedTags.news || selectedTags.news.length === 0) return true;
+                    return selectedTags.news.some((tag: string) => newsItem.tags?.includes(tag));
+                  })
+                  .map((newsItem) => (
+                  <Card key={newsItem.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                    <div className="aspect-video bg-gray-100 relative">
+                      <img
+                        src={newsItem.thumbnail}
+                        alt={newsItem.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 right-2">
+                        <Badge>{newsItem.category}</Badge>
+                      </div>
+                    </div>
+                    <CardContent className="p-4 space-y-3">
+                      <div>
+                        <h3 className="font-semibold mb-2">{newsItem.title}</h3>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <span>{newsItem.author}</span>
+                          <span>·</span>
+                          <span>{newsItem.publishDate}</span>
+                        </div>
+                      </div>
+
+                      {/* 标签显示 */}
+                      {newsItem.tags && newsItem.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 pt-2 border-t">
+                          {newsItem.tags.map((tag: string) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center justify-between text-sm pt-2 border-t">
+                        <div className="flex items-center gap-2">
+                          <Eye className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-600">{newsItem.views}</span>
+                        </div>
+                        <Badge variant={statusMap[newsItem.status].variant}>
+                          {statusMap[newsItem.status].label}
+                        </Badge>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className="flex-1">
+                          <Edit className="h-4 w-4 mr-2" />
+                          编辑
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDelete(newsItem.id, 'news')}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            {/* 通知推送 */}
+            <TabsContent value="notifications" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">通知推送</h3>
+                  <p className="text-sm text-gray-600">管理系统通知和营销推送消息</p>
+                </div>
+                <Button onClick={() => setNotificationDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  创建通知
+                </Button>
+              </div>
+
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>标题</TableHead>
+                      <TableHead>内容</TableHead>
+                      <TableHead>链接</TableHead>
+                      <TableHead>类型</TableHead>
+                      <TableHead>目标用户</TableHead>
+                      <TableHead>发送时间</TableHead>
+                      <TableHead>阅读率</TableHead>
+                      <TableHead>状态</TableHead>
+                      <TableHead className="text-center">���作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {notifications.map((notification) => (
+                      <TableRow key={notification.id}>
+                        <TableCell className="font-medium">{notification.title}</TableCell>
+                        <TableCell className="max-w-xs truncate">{notification.content}</TableCell>
+                        <TableCell>
+                          {notification.enableLink && notification.link ? (
+                            <a 
+                              href={notification.link} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+                            >
+                              <Link2 className="h-3 w-3" />
+                              查看详情
+                            </a>
+                          ) : (
+                            <span className="text-gray-400 text-sm">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {notification.notificationType === 'system' ? '系统' : '营销'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {notification.target === 'all_users' ? '全部用户' : 
+                           notification.target === 'dealers' ? '经销商' : '客户'}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {notification.sendTime || '-'}
+                        </TableCell>
+                        <TableCell>
+                          {notification.totalCount > 0 ? (
+                            <span className="text-sm">
+                              {notification.readCount}/{notification.totalCount}
+                              <span className="text-gray-500 ml-1">
+                                ({Math.round(notification.readCount / notification.totalCount * 100)}%)
+                              </span>
+                            </span>
+                          ) : '-'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={statusMap[notification.status].variant}>
+                            {statusMap[notification.status].label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex justify-center gap-2">
+                            <Button variant="outline" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleDelete(notification.id, 'notification')}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+
+            {/* 收集表单管理 */}
+            <TabsContent value="forms" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">收集表单管理</h3>
+                  <p className="text-sm text-gray-600">创建和管理自定义表单，收集用户提交的数据</p>
+                </div>
+                <Button onClick={() => setFormDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  创建表单
+                </Button>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {forms.map((form) => (
+                  <Card key={form.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2">
+                          <Smartphone className="h-8 w-8 text-blue-600" />
+                          <Badge variant={statusMap[form.status].variant}>
+                            {statusMap[form.status].label}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <h3 className="font-semibold mb-1">{form.name}</h3>
+                        <p className="text-sm text-gray-600 mb-3">{form.description}</p>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600">表单字段</span>
+                            <span className="font-medium">{form.fields.length}个</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600">提交次数</span>
+                            <span className="font-medium text-blue-600">{form.submissions}次</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-600">创建时间</span>
+                            <span className="text-gray-500 text-xs">{form.createTime}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 字段列表预览 */}
+                      <div className="pt-2 border-t">
+                        <p className="text-xs font-medium text-gray-700 mb-2">表单字段：</p>
+                        <div className="flex flex-wrap gap-1">
+                          {form.fields.slice(0, 4).map((field) => (
+                            <Badge key={field.id} variant="outline" className="text-xs">
+                              {field.label}
+                              {field.required && <span className="text-red-500 ml-0.5">*</span>}
+                            </Badge>
+                          ))}
+                          {form.fields.length > 4 && (
+                            <Badge variant="outline" className="text-xs text-gray-500">
+                              +{form.fields.length - 4}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2 border-t">
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => {
+                            // 模拟导出功能
+                            alert(`导出 "${form.name}" 的 ${form.submissions} 条申请数据`);
+                          }}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          导出数据
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDelete(form.id, 'form')}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            {/* 产品库 */}
+            <TabsContent value="products" className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold">理光彩色多功能打印机产品库</h3>
+                <p className="text-sm text-gray-600 mt-1">来源：https://www.ricoh.com.cn/products/multifunction-printer-colour</p>
+              </div>
+
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="搜索产品名称或型号..."
+                  value={productSearchTerm}
+                  onChange={(e) => setProductSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {filteredProducts.map((product: ProductItem) => (
+                  <Card key={product.id} className="overflow-hidden hover:shadow-md transition-shadow border-blue-100">
+                    <div className="aspect-video bg-gradient-to-br from-blue-50 to-gray-50 relative">
+                      <img
+                        src={product.thumbnail}
+                        alt={product.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 left-2">
+                        <Badge className="bg-blue-600">{product.productCode}</Badge>
+                      </div>
+                      <div className="absolute top-2 right-2">
+                        <Badge variant="secondary">{product.printSpeed}</Badge>
+                      </div>
+                    </div>
+                    <CardContent className="p-4 space-y-3">
+                      <div>
+                        <h3 className="font-semibold mb-1 text-blue-900">{product.title}</h3>
+                        <p className="text-sm text-gray-600 line-clamp-2">{product.features}</p>
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-sm pt-2 border-t">
+                        <div className="flex items-center gap-2">
+                          <Eye className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-600">{product.views}</span>
+                        </div>
+                        <span className="font-medium text-blue-600">{product.price}</span>
+                      </div>
+
+                      {/* 可见性管理 */}
+                      <div className="flex items-center justify-between pt-2 border-t">
+                        <div className="space-y-0.5">
+                          <Label className="text-xs font-medium">前台可见</Label>
+                          <p className="text-xs text-gray-500">
+                            {product.visible ? "用户可见" : "仅后台"}
+                          </p>
+                        </div>
+                        <Switch
+                          checked={product.visible !== false}
+                          onCheckedChange={() => toggleProductVisibility(product.id)}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            {/* 用户指南管理 */}
+            <TabsContent value="guides" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">用户指南管理</h3>
+                  <p className="text-sm text-gray-600">管理RICOH产品使用技巧和操作指南</p>
+                </div>
+                <Button onClick={() => setGuideDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  添加指南
+                </Button>
+              </div>
+
+              {/* 搜索和筛选 */}
+              <div className="grid gap-4 md:grid-cols-4">
+                <div className="relative md:col-span-2">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="搜索指南标题或产品名称..."
+                    value={guideSearchTerm}
+                    onChange={(e) => setGuideSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择分类" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">全部分类</SelectItem>
+                    <SelectItem value="基础操作">基础操作</SelectItem>
+                    <SelectItem value="维护保养">维护保养</SelectItem>
+                    <SelectItem value="故障排除">故障排除</SelectItem>
+                    <SelectItem value="高级功能">高级功能</SelectItem>
+                    <SelectItem value="安全功能">安全功能</SelectItem>
+                    <SelectItem value="性能优化">性能优化</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="难度等级" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">全部难度</SelectItem>
+                    <SelectItem value="简单">简单</SelectItem>
+                    <SelectItem value="中等">中等</SelectItem>
+                    <SelectItem value="困难">困难</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 标签快捷索引 */}
+              {userGuides.some((g: UserGuideItem) => g.tags && g.tags.length > 0) && (
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Tag className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-medium text-gray-700">标签快捷索引</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from(new Set(userGuides.flatMap((g: UserGuideItem) => g.tags || []))).map((tag: string) => {
+                      const isSelected = selectedTags.guides?.includes(tag);
+                      return (
+                        <Badge
+                          key={tag}
+                          variant={isSelected ? "default" : "outline"}
+                          className={`cursor-pointer transition-all ${
+                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
+                          }`}
+                          onClick={() => {
+                            const currentSelected = selectedTags.guides || [];
+                            setSelectedTags({
+                              ...selectedTags,
+                              guides: isSelected
+                                ? currentSelected.filter((t: string) => t !== tag)
+                                : [...currentSelected, tag]
+                            });
+                          }}
+                        >
+                          {tag}
+                          {isSelected && <X className="h-3 w-3 ml-1" />}
+                        </Badge>
+                      );
+                    })}
+                    {selectedTags.guides && selectedTags.guides.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedTags({ ...selectedTags, guides: [] })}
+                        className="h-6 text-xs"
+                      >
+                        清除筛选
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* 统计信息 */}
+              <div className="grid gap-4 md:grid-cols-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">总指南数</p>
+                        <p className="text-2xl font-bold text-blue-600">{userGuides.length}</p>
+                      </div>
+                      <BookOpen className="h-8 w-8 text-blue-600 opacity-50" />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">总浏览量</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          {userGuides.reduce((sum, g) => sum + g.views, 0)}
+                        </p>
+                      </div>
+                      <Eye className="h-8 w-8 text-green-600 opacity-50" />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">总点赞数</p>
+                        <p className="text-2xl font-bold text-orange-600">
+                          {userGuides.reduce((sum, g) => sum + g.likes, 0)}
+                        </p>
+                      </div>
+                      <ThumbsUp className="h-8 w-8 text-orange-600 opacity-50" />
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-600">有帮助</p>
+                        <p className="text-2xl font-bold text-purple-600">
+                          {userGuides.reduce((sum, g) => sum + g.helpful, 0)}
+                        </p>
+                      </div>
+                      <HelpCircle className="h-8 w-8 text-purple-600 opacity-50" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* 指南卡片列表 */}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredGuides.map((guide) => (
+                  <Card key={guide.id} className="overflow-hidden hover:shadow-md transition-shadow border-l-4 border-l-blue-500">
+                    <CardContent className="p-5 space-y-3">
+                      {/* 标题和产品 */}
+                      <div>
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <h3 className="font-semibold text-base leading-tight flex-1">{guide.title}</h3>
+                          <Badge variant="outline" className="text-xs whitespace-nowrap">
+                            {guide.product}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge className="bg-blue-600">{guide.category}</Badge>
+                          <Badge 
+                            variant="secondary"
+                            className={
+                              guide.difficulty === "简单" ? "bg-green-100 text-green-700" :
+                              guide.difficulty === "中等" ? "bg-yellow-100 text-yellow-700" :
+                              "bg-red-100 text-red-700"
+                            }
+                          >
+                            {guide.difficulty}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* 内容预览 */}
+                      <p className="text-sm text-gray-600 line-clamp-3">
+                        {guide.content}
+                      </p>
+
+                      {/* 标签 */}
+                      {guide.tags && guide.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 pt-2 border-t">
+                          {guide.tags.slice(0, 3).map((tag: string) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                          {guide.tags.length > 3 && (
+                            <Badge variant="secondary" className="text-xs">
+                              +{guide.tags.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+
+                      {/* 统计信息 */}
+                      <div className="flex items-center justify-between text-sm pt-2 border-t">
+                        <div className="flex items-center gap-3 text-gray-600">
+                          <span className="flex items-center gap-1">
+                            <Eye className="h-4 w-4" />
+                            {guide.views}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <ThumbsUp className="h-4 w-4" />
+                            {guide.likes}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <HelpCircle className="h-4 w-4" />
+                            {guide.helpful}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 更新时间 */}
+                      <div className="text-xs text-gray-500 pt-2 border-t">
+                        更新于 {guide.updateTime}
+                      </div>
+
+                      {/* 操作按钮 */}
+                      <div className="flex gap-2 pt-2">
+                        <Button variant="outline" size="sm" className="flex-1">
+                          <Edit className="h-4 w-4 mr-2" />
+                          编辑
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDelete(guide.id, 'guide')}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* 空状态 */}
+              {filteredGuides.length === 0 && (
+                <div className="text-center py-12">
+                  <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">暂无符合条件的用户指南</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-4"
+                    onClick={() => {
+                      setGuideSearchTerm("");
+                      setSelectedCategory("all");
+                      setSelectedDifficulty("all");
+                      setSelectedTags({ ...selectedTags, guides: [] });
+                    }}
+                  >
+                    清除所有筛选
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="courses" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">培训课程管理</h3>
+                  <p className="text-sm text-gray-600">管理培训课程、课时和讲师信息</p>
+                </div>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  新增课程
+                </Button>
+              </div>
+
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="搜索课程名称、分类或讲师..."
+                  value={courseSearchTerm}
+                  onChange={(e) => setCourseSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>课程名称</TableHead>
+                      <TableHead>分类</TableHead>
+                      <TableHead>级别</TableHead>
+                      <TableHead>课时</TableHead>
+                      <TableHead>讲师</TableHead>
+                      <TableHead>报名人数</TableHead>
+                      <TableHead>通过率</TableHead>
+                      <TableHead>状态</TableHead>
+                      <TableHead className="text-right">操作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredCourses.map((course: TrainingCourseItem) => (
+                      <TableRow key={course.id}>
+                        <TableCell className="font-medium">{course.title}</TableCell>
+                        <TableCell>{course.category}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{course.level}</Badge>
+                        </TableCell>
+                        <TableCell>{course.durationHours}h</TableCell>
+                        <TableCell>{course.instructor}</TableCell>
+                        <TableCell>{course.enrolledCount}</TableCell>
+                        <TableCell>{course.passRate}%</TableCell>
+                        <TableCell>
+                          <Badge variant={statusMap[course.status].variant}>
+                            {statusMap[course.status].label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(course.id, "course")}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="certifications" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">考试认证管理</h3>
+                  <p className="text-sm text-gray-600">管理认证考试、及格线和考试规则</p>
+                </div>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  新增认证
+                </Button>
+              </div>
+
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="搜索认证名称、考试编码或关联课程..."
+                  value={certSearchTerm}
+                  onChange={(e) => setCertSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>认证名称</TableHead>
+                      <TableHead>考试编码</TableHead>
+                      <TableHead>关联课程</TableHead>
+                      <TableHead>题量</TableHead>
+                      <TableHead>及格线</TableHead>
+                      <TableHead>时长</TableHead>
+                      <TableHead>参考人数</TableHead>
+                      <TableHead>通过率</TableHead>
+                      <TableHead>状态</TableHead>
+                      <TableHead className="text-right">操作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredCertifications.map((cert: CertificationItem) => (
+                      <TableRow key={cert.id}>
+                        <TableCell className="font-medium">{cert.name}</TableCell>
+                        <TableCell className="font-mono text-xs">{cert.examCode}</TableCell>
+                        <TableCell>{cert.relatedCourse}</TableCell>
+                        <TableCell>{cert.questionCount}</TableCell>
+                        <TableCell>{cert.passScore}</TableCell>
+                        <TableCell>{cert.examDurationMin}min</TableCell>
+                        <TableCell>{cert.participants}</TableCell>
+                        <TableCell>{cert.passRate}%</TableCell>
+                        <TableCell>
+                          <Badge variant={statusMap[cert.status].variant}>
+                            {statusMap[cert.status].label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(cert.id, "cert")}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* 创建通知对话框 */}
+      <Dialog open={notificationDialogOpen} onOpenChange={setNotificationDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>创建通知</DialogTitle>
+            <DialogDescription>
+              选择通知类型并填写相关信息
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={(e) => { e.preventDefault(); setNotificationDialogOpen(false); }}>
+            <div className="space-y-4 py-4">
+              {/* 通知类型选择 */}
+              <div className="space-y-2">
+                <Label>通知类型</Label>
+                <div className="grid grid-cols-3 gap-4">
+                  <div
+                    onClick={() => setNotificationType("title")}
+                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 ${
+                      notificationType === "title" ? "border-blue-600 bg-blue-50" : "border-gray-200"
+                    }`}
+                  >
+                    <div className="text-center space-y-2">
+                      <Bell className={`h-8 w-8 mx-auto ${
+                        notificationType === "title" ? "text-blue-600" : "text-gray-400"
+                      }`} />
+                      <div>
+                        <p className="font-medium">标题通知</p>
+                        <p className="text-xs text-gray-500 mt-1">简短标题+副标题</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    onClick={() => setNotificationType("content")}
+                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 ${
+                      notificationType === "content" ? "border-blue-600 bg-blue-50" : "border-gray-200"
+                    }`}
+                  >
+                    <div className="text-center space-y-2">
+                      <Newspaper className={`h-8 w-8 mx-auto ${
+                        notificationType === "content" ? "text-blue-600" : "text-gray-400"
+                      }`} />
+                      <div>
+                        <p className="font-medium">内容通知</p>
+                        <p className="text-xs text-gray-500 mt-1">标题+详细内容</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    onClick={() => setNotificationType("image")}
+                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 ${
+                      notificationType === "image" ? "border-blue-600 bg-blue-50" : "border-gray-200"
+                    }`}
+                  >
+                    <div className="text-center space-y-2">
+                      <ImageIcon className={`h-8 w-8 mx-auto ${
+                        notificationType === "image" ? "text-blue-600" : "text-gray-400"
+                      }`} />
+                      <div>
+                        <p className="font-medium">图片通知</p>
+                        <p className="text-xs text-gray-500 mt-1">标题+内容+图片</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 标题 */}
+              <div className="space-y-2">
+                <Label htmlFor="notification-title">通知标题 *</Label>
+                <Input
+                  id="notification-title"
+                  placeholder="请输入通知标题"
+                  required
+                />
+              </div>
+
+              {/* 内容 - 标题类型显示为副标题 */}
+              {notificationType === "title" && (
+                <div className="space-y-2">
+                  <Label htmlFor="notification-subtitle">副标题</Label>
+                  <Input
+                    id="notification-subtitle"
+                    placeholder="请输入副标题（可选）"
+                  />
+                </div>
+              )}
+
+              {/* 内容 - 内容类型和图片类型显示为详细内容 */}
+              {(notificationType === "content" || notificationType === "image") && (
+                <div className="space-y-2">
+                  <Label htmlFor="notification-content">通知内容 *</Label>
+                  <Textarea
+                    id="notification-content"
+                    placeholder="请输入通知的详细内容"
+                    rows={5}
+                    required
+                  />
+                </div>
+              )}
+
+              {/* 图片上传 - 仅图片类型显示 */}
+              {notificationType === "image" && (
+                <div className="space-y-2">
+                  <Label htmlFor="notification-image">通知图片 *</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="notification-image"
+                      placeholder="请输入图片URL或上传图片"
+                      className="flex-1"
+                      required
+                    />
+                    <Button type="button" variant="outline">
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      上传图片
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500">建议尺寸：800x400px，格式：JPG/PNG</p>
+                </div>
+              )}
+
+              {/* 通知分类 */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="notification-category">通知分类</Label>
+                  <Select defaultValue="system">
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择通知分类" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="system">系统通知</SelectItem>
+                      <SelectItem value="marketing">营销推送</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="notification-target">目标用户</Label>
+                  <Select defaultValue="all_users">
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择目标用户" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all_users">全部用户</SelectItem>
+                      <SelectItem value="dealers">经销商</SelectItem>
+                      <SelectItem value="customers">客户</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* 发送时间 */}
+              <div className="space-y-2">
+                <Label htmlFor="notification-time">发送时间</Label>
+                <Input
+                  id="notification-time"
+                  type="datetime-local"
+                  placeholder="立即发送"
+                />
+                <p className="text-xs text-gray-500">留空表示立即发送，或选择定时发送</p>
+              </div>
+
+              {/* 查看详情链接 */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="notification-link">查看详情链接</Label>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="enable-link"
+                      checked={enableLink}
+                      onCheckedChange={setEnableLink}
+                    />
+                    <Label htmlFor="enable-link" className="text-sm font-normal cursor-pointer">
+                      启用链接
+                    </Label>
+                  </div>
+                </div>
+                {enableLink && (
+                  <>
+                    <div className="flex gap-2 items-start">
+                      <div className="flex-1 space-y-2">
+                        <Input
+                          id="notification-link"
+                          placeholder="请输入跳转链接，例如：/products/new-item"
+                          defaultValue=""
+                        />
+                        <p className="text-xs text-gray-500">
+                          用户点击通知后将跳转到此页面查看详细内容
+                        </p>
+                      </div>
+                      <Link2 className="h-5 w-5 text-gray-400 mt-2" />
+                    </div>
+                    <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm">
+                      <p className="font-medium text-blue-900 mb-1">链接示例：</p>
+                      <ul className="text-blue-700 space-y-1 text-xs">
+                        <li>• 产品详情：/products/ricoh-im-c6000</li>
+                        <li>• 活动页面：/activities/spring-sale-2024</li>
+                        <li>• 新闻详情：/news/company-announcement</li>
+                        <li>• 外部链接：https://www.ricoh.com.cn</li>
+                      </ul>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setNotificationDialogOpen(false)}>
+                取消
+              </Button>
+              <Button type="button" variant="secondary">
+                保存草稿
+              </Button>
+              <Button type="submit">
+                立即发送
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* 案例库/新闻内容对话框 */}
+      <Dialog open={dialogOpen} onOpenChange={(open) => {
+        setDialogOpen(open);
+        if (!open) {
+          resetImport();
+          setCurrentTags([]);
+          setTagInput("");
+        }
+      }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {mainTab === "cases" ? "添加案例" : mainTab === "news" ? "发布新闻" : "添加内容"}
+            </DialogTitle>
+            <DialogDescription>
+              {mainTab === "cases" 
+                ? "填写客户案例信息，或从外部URL一键导入" 
+                : mainTab === "news"
+                ? "填写新闻内容，或从外部URL一键导入"
+                : "填写内容信息"}
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={(e) => { 
+            e.preventDefault(); 
+            setDialogOpen(false); 
+            resetImport();
+          }}>
+            <div className="space-y-6 py-4">
+              {/* URL导入区域 */}
+              {(mainTab === "cases" || mainTab === "news") && (
+                <div className="rounded-lg border-2 border-dashed border-blue-300 bg-blue-50/50 p-4 space-y-3">
+                  <div className="flex items-center gap-2 text-blue-900">
+                    <Download className="h-5 w-5" />
+                    <h4 className="font-semibold">一键导入</h4>
+                  </div>
+                  <p className="text-sm text-blue-700">
+                    输入新闻或博客文章的URL，系统将自动抓取内容并填充到表单中
+                  </p>
+                  
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="请输入文章URL，例如：https://example.com/article/123"
+                      value={importUrl}
+                      onChange={(e) => setImportUrl(e.target.value)}
+                      disabled={isImporting}
+                      className="flex-1 bg-white"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleImportFromUrl}
+                      disabled={!importUrl || isImporting}
+                      className="min-w-[100px]"
+                    >
+                      {isImporting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          导入中...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-4 w-4 mr-2" />
+                          导入
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {importSuccess && (
+                    <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded-lg p-3">
+                      <div className="h-5 w-5 rounded-full bg-green-500 flex items-center justify-center">
+                        <span className="text-white text-xs">✓</span>
+                      </div>
+                      <span className="text-sm font-medium">
+                        内容导入成功！已自动填充到下方表单，请检查并修改
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="text-xs text-blue-600 space-y-1">
+                    <p className="font-medium">💡 功能说明：</p>
+                    <ul className="space-y-0.5 ml-4">
+                      <li>• 目前为演示模式，实际使用需要后端API支持</li>
+                      <li>• 支持导入第三方新闻网站、博客文章等</li>
+                      <li>• 导入后可以编辑和调整内容</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* 案例库表单 */}
+              {mainTab === "cases" && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="case-title">案例标题 *</Label>
+                      <Input
+                        id="case-title"
+                        placeholder="请输入案例标题"
+                        value={formData.title}
+                        onChange={(e) => setFormData({...formData, title: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="case-customer">客户名称 *</Label>
+                      <Input
+                        id="case-customer"
+                        placeholder="例如：上海某某制造集团"
+                        value={formData.customer}
+                        onChange={(e) => setFormData({...formData, customer: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="case-industry">所属行业 *</Label>
+                      <Select 
+                        value={formData.industry}
+                        onValueChange={(value) => setFormData({...formData, industry: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="选择行业" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="制造业">制造业</SelectItem>
+                          <SelectItem value="金融业">金融业</SelectItem>
+                          <SelectItem value="教育">教育</SelectItem>
+                          <SelectItem value="医疗">医疗</SelectItem>
+                          <SelectItem value="科技">科技</SelectItem>
+                          <SelectItem value="零售">零售</SelectItem>
+                          <SelectItem value="物流">物流</SelectItem>
+                          <SelectItem value="其他">其他</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="case-solution">解决方案 *</Label>
+                      <Input
+                        id="case-solution"
+                        placeholder="例如：智能文档管理系统"
+                        value={formData.solution}
+                        onChange={(e) => setFormData({...formData, solution: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="case-summary">案例摘要 *</Label>
+                    <Textarea
+                      id="case-summary"
+                      placeholder="请输入案例简介（100-200字）"
+                      rows={3}
+                      value={formData.summary}
+                      onChange={(e) => setFormData({...formData, summary: e.target.value})}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="case-content">案例详情 *</Label>
+                    <Textarea
+                      id="case-content"
+                      placeholder="请输入案例的详细内容，包括项目背景、解决方案、实施效果等"
+                      rows={12}
+                      value={formData.content}
+                      onChange={(e) => setFormData({...formData, content: e.target.value})}
+                      required
+                      className="font-mono text-sm"
+                    />
+                    <p className="text-xs text-gray-500">
+                      支持换行和段落格式，建议包含：项目背景、解决方案、实施过程、实施效果等内容
+                    </p>
+                  </div>
+
+                  {/* 标签管理 */}
+                  <div className="space-y-2">
+                    <Label htmlFor="case-tags">标签</Label>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          id="case-tags"
+                          placeholder="输入标签后按回车添加"
+                          value={tagInput}
+                          onChange={(e) => setTagInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (tagInput.trim() && !currentTags.includes(tagInput.trim())) {
+                                setCurrentTags([...currentTags, tagInput.trim()]);
+                                setTagInput("");
+                              }
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            if (tagInput.trim() && !currentTags.includes(tagInput.trim())) {
+                              setCurrentTags([...currentTags, tagInput.trim()]);
+                              setTagInput("");
+                            }
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          添加
+                        </Button>
+                      </div>
+                      {currentTags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border">
+                          {currentTags.map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-sm">
+                              {tag}
+                              <X
+                                className="h-3 w-3 ml-1 cursor-pointer hover:text-red-600"
+                                onClick={() => setCurrentTags(currentTags.filter(t => t !== tag))}
+                              />
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      <p className="text-xs text-gray-500">
+                        添加标签以便快速分类和检索，如：数字化转型、智能制造、大型企业等
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="case-thumbnail">缩略图URL</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="case-thumbnail"
+                        placeholder="请输入图片URL"
+                        className="flex-1"
+                      />
+                      <Button type="button" variant="outline">
+                        <ImageIcon className="h-4 w-4 mr-2" />
+                        上传图片
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* 新闻内容表单 */}
+              {mainTab === "news" && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="news-title">新闻标题 *</Label>
+                    <Input
+                      id="news-title"
+                      placeholder="请输入新闻标题"
+                      value={formData.title}
+                      onChange={(e) => setFormData({...formData, title: e.target.value})}
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="news-category">新闻分类 *</Label>
+                      <Select 
+                        value={formData.category}
+                        onValueChange={(value) => setFormData({...formData, category: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="选择分类" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="公司动态">公司动态</SelectItem>
+                          <SelectItem value="产品新闻">产品新闻</SelectItem>
+                          <SelectItem value="行业动态">行业动态</SelectItem>
+                          <SelectItem value="行业荣誉">行业荣誉</SelectItem>
+                          <SelectItem value="技术文章">技术文章</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="news-author">作者 *</Label>
+                      <Input
+                        id="news-author"
+                        placeholder="请输入作者姓名"
+                        value={formData.author}
+                        onChange={(e) => setFormData({...formData, author: e.target.value})}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="news-summary">新闻摘要 *</Label>
+                    <Textarea
+                      id="news-summary"
+                      placeholder="请输入新闻摘要（100-150字）"
+                      rows={3}
+                      value={formData.summary}
+                      onChange={(e) => setFormData({...formData, summary: e.target.value})}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="news-content">新闻正文 *</Label>
+                    <Textarea
+                      id="news-content"
+                      placeholder="请输入新闻的详细内容"
+                      rows={15}
+                      value={formData.content}
+                      onChange={(e) => setFormData({...formData, content: e.target.value})}
+                      required
+                      className="font-mono text-sm"
+                    />
+                    <p className="text-xs text-gray-500">
+                      支持富文本格式，建议使用标题、段落、列表等结构化内容
+                    </p>
+                  </div>
+
+                  {/* 标签管理 */}
+                  <div className="space-y-2">
+                    <Label htmlFor="news-tags">标签</Label>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          id="news-tags"
+                          placeholder="输入标签后按回车添加"
+                          value={tagInput}
+                          onChange={(e) => setTagInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (tagInput.trim() && !currentTags.includes(tagInput.trim())) {
+                                setCurrentTags([...currentTags, tagInput.trim()]);
+                                setTagInput("");
+                              }
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            if (tagInput.trim() && !currentTags.includes(tagInput.trim())) {
+                              setCurrentTags([...currentTags, tagInput.trim()]);
+                              setTagInput("");
+                            }
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          添加
+                        </Button>
+                      </div>
+                      {currentTags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border">
+                          {currentTags.map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-sm">
+                              {tag}
+                              <X
+                                className="h-3 w-3 ml-1 cursor-pointer hover:text-red-600"
+                                onClick={() => setCurrentTags(currentTags.filter(t => t !== tag))}
+                              />
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                      <p className="text-xs text-gray-500">
+                        添加标签以便快速分类和检索，如：战略规划、产品技术、行业荣誉等
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="news-thumbnail">缩略图URL</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="news-thumbnail"
+                        placeholder="请输入图片URL"
+                        className="flex-1"
+                      />
+                      <Button type="button" variant="outline">
+                        <ImageIcon className="h-4 w-4 mr-2" />
+                        上传图片
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="news-publish-date">发布日期</Label>
+                    <Input
+                      id="news-publish-date"
+                      type="date"
+                      defaultValue={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setDialogOpen(false);
+                  resetImport();
+                }}
+              >
+                取消
+              </Button>
+              <Button type="button" variant="secondary">
+                保存草稿
+              </Button>
+              <Button type="submit">
+                发布
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* 广告位对话框 */}
+      <Dialog open={bannerDialogOpen} onOpenChange={(open) => {
+        setBannerDialogOpen(open);
+        if (open) {
+          setBannerPosition("homepage"); // 重置为默认值
+        }
+      }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>添加广告位</DialogTitle>
+            <DialogDescription>
+              配置广告横幅的显示位置、时间和跳转链接
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={(e) => { e.preventDefault(); setBannerDialogOpen(false); }}>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="banner-title">广告标题 *</Label>
+                <Input
+                  id="banner-title"
+                  placeholder="请输入广告标题，如：春季新品促销"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="banner-position">投放位置 *</Label>
+                <Select 
+                  defaultValue="homepage"
+                  onValueChange={(value) => setBannerPosition(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择投放位置" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="homepage">首页轮播</SelectItem>
+                    <SelectItem value="sidebar">侧边栏</SelectItem>
+                    <SelectItem value="top">顶部横幅</SelectItem>
+                    <SelectItem value="bottom">底部横幅</SelectItem>
+                    <SelectItem value="product">产品页</SelectItem>
+                    <SelectItem value="splash">开屏广告</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 开屏广告特殊设置 */}
+              {bannerPosition === "splash" && (
+                <div className="rounded-lg border-2 border-blue-200 bg-blue-50 p-4 space-y-4">
+                  <div className="flex items-center gap-2 text-blue-900 font-medium">
+                    <Smartphone className="h-5 w-5" />
+                    <span>开屏广告专属设置</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="splash-duration">显示时长（秒）*</Label>
+                      <Input
+                        id="splash-duration"
+                        type="number"
+                        defaultValue="5"
+                        min="1"
+                        max="10"
+                        required
+                      />
+                      <p className="text-xs text-gray-600">
+                        推荐3-5秒，最长不超过10秒
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="splash-frequency">每天显示次数 *</Label>
+                      <Select defaultValue="1">
+                        <SelectTrigger>
+                          <SelectValue placeholder="选择频率" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">每天1次</SelectItem>
+                          <SelectItem value="2">每天2次</SelectItem>
+                          <SelectItem value="3">每天3次</SelectItem>
+                          <SelectItem value="unlimited">不限次数</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between space-y-0 rounded-lg border border-gray-300 bg-white p-3">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="splash-skippable" className="text-sm font-medium">
+                        允许用户跳过
+                      </Label>
+                      <p className="text-xs text-gray-600">
+                        开启后用户可点击"跳过"按钮关闭广告
+                      </p>
+                    </div>
+                    <Switch
+                      id="splash-skippable"
+                      defaultChecked={true}
+                    />
+                  </div>
+
+                  <div className="rounded-md bg-yellow-50 border border-yellow-200 p-3">
+                    <p className="text-xs text-yellow-800">
+                      💡 <strong>最佳实践：</strong>建议设置3-5秒，允许跳过，每天显示1次，以获得最佳用户体验
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="banner-image">广告图片 *</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="banner-image"
+                    placeholder="请输入图片URL"
+                    className="flex-1"
+                    required
+                  />
+                  <Button type="button" variant="outline">
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                    上传图片
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500">
+                  {bannerPosition === "splash" 
+                    ? "开屏广告推荐尺寸：1080x1920px（竖屏全屏）"
+                    : "首页轮播推荐尺寸���1920x600px，侧边栏推荐尺寸：400x300px"
+                  }
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="banner-link">跳转链接</Label>
+                <Input
+                  id="banner-link"
+                  placeholder="请输入点击后跳转的链接，如：/products/spring-sale"
+                />
+                <p className="text-xs text-gray-500">
+                  留空表示不跳转，仅作展示
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="banner-start-date">开始时间 *</Label>
+                  <Input
+                    id="banner-start-date"
+                    type="date"
+                    defaultValue={new Date().toISOString().split('T')[0]}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="banner-end-date">结束时间 *</Label>
+                  <Input
+                    id="banner-end-date"
+                    type="date"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="banner-order">显示顺序 *</Label>
+                <Input
+                  id="banner-order"
+                  type="number"
+                  defaultValue="1"
+                  min="1"
+                  required
+                />
+                <p className="text-xs text-gray-500">
+                  数字越小，排序越靠前。同一位置的广告将按顺序轮播
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="banner-status">状态 *</Label>
+                <Select defaultValue="active">
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择状态" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">启用</SelectItem>
+                    <SelectItem value="inactive">停用</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setBannerDialogOpen(false)}>
+                取消
+              </Button>
+              <Button type="submit">保存</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* 市场活动对话框 */}
+      <Dialog open={activityDialogOpen} onOpenChange={(open) => {
+        setActivityDialogOpen(open);
+        if (!open) {
+          setCurrentTags([]);
+          setTagInput("");
+        }
+      }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>创建市场活动</DialogTitle>
+            <DialogDescription>
+              规划和管理线上线下市场活动、研讨会等
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={(e) => { e.preventDefault(); setActivityDialogOpen(false); }}>
+            <div className="space-y-4 py-4">
+              {/* 基本信息 */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm text-gray-700 border-b pb-2">基本信息</h4>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="activity-title">活动名称 *</Label>
+                  <Input
+                    id="activity-title"
+                    placeholder="请输入活动名称，如：2024春季新品发布会"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="activity-type">活动类型 *</Label>
+                    <Select defaultValue="offline">
+                      <SelectTrigger>
+                        <SelectValue placeholder="选择活动类型" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="offline">线下活动</SelectItem>
+                        <SelectItem value="online">线上活动</SelectItem>
+                        <SelectItem value="hybrid">线上线下结合</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="activity-status">活动状态 *</Label>
+                    <Select defaultValue="upcoming">
+                      <SelectTrigger>
+                        <SelectValue placeholder="选择状态" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="upcoming">即将开始</SelectItem>
+                        <SelectItem value="ongoing">进行中</SelectItem>
+                        <SelectItem value="completed">已完成</SelectItem>
+                        <SelectItem value="cancelled">已取消</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="activity-description">活动描述 *</Label>
+                  <Textarea
+                    id="activity-description"
+                    placeholder="请输入活动的详细描述和亮点"
+                    rows={4}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* 时间和地点 */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm text-gray-700 border-b pb-2">时间和地点</h4>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="activity-start-date">开始日期 *</Label>
+                    <Input
+                      id="activity-start-date"
+                      type="date"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="activity-start-time">开始时间 *</Label>
+                    <Input
+                      id="activity-start-time"
+                      type="time"
+                      defaultValue="09:00"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="activity-end-date">结束日期 *</Label>
+                    <Input
+                      id="activity-end-date"
+                      type="date"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="activity-end-time">结束时间 *</Label>
+                    <Input
+                      id="activity-end-time"
+                      type="time"
+                      defaultValue="18:00"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="activity-location">活动地点 *</Label>
+                  <Input
+                    id="activity-location"
+                    placeholder="请输入活动地点，如：上海国际会展中心 或 在线直播"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="activity-address">详细地址</Label>
+                  <Input
+                    id="activity-address"
+                    placeholder="请输入详细地址（线上活动可填写直播链接）"
+                  />
+                </div>
+              </div>
+
+              {/* 规模和预算 */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm text-gray-700 border-b pb-2">规模和预算</h4>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="activity-capacity">参与人数上限</Label>
+                    <Input
+                      id="activity-capacity"
+                      type="number"
+                      placeholder="如：500"
+                      min="1"
+                    />
+                    <p className="text-xs text-gray-500">
+                      留空表示不限人数
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="activity-registered">已报名人数</Label>
+                    <Input
+                      id="activity-registered"
+                      type="number"
+                      defaultValue="0"
+                      min="0"
+                      readOnly
+                      className="bg-gray-50"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="activity-budget">活动预算（元）</Label>
+                  <Input
+                    id="activity-budget"
+                    type="number"
+                    placeholder="请输入活动预算"
+                    min="0"
+                    step="1000"
+                  />
+                </div>
+              </div>
+
+              {/* 标签管理 */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm text-gray-700 border-b pb-2">标签管理</h4>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="activity-tags">活动标签</Label>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        id="activity-tags"
+                        placeholder="输入标签后按回车添加"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (tagInput.trim() && !currentTags.includes(tagInput.trim())) {
+                              setCurrentTags([...currentTags, tagInput.trim()]);
+                              setTagInput("");
+                            }
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          if (tagInput.trim() && !currentTags.includes(tagInput.trim())) {
+                            setCurrentTags([...currentTags, tagInput.trim()]);
+                            setTagInput("");
+                          }
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        添加
+                      </Button>
+                    </div>
+                    {currentTags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border">
+                        {currentTags.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-sm">
+                            {tag}
+                            <X
+                              className="h-3 w-3 ml-1 cursor-pointer hover:text-red-600"
+                              onClick={() => setCurrentTags(currentTags.filter(t => t !== tag))}
+                            />
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-500">
+                      添加标签以便快速分类和检索，如：新品发布、在线研讨会、峰会、技术培训等
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 媒体资源 */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm text-gray-700 border-b pb-2">媒体资源</h4>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="activity-thumbnail">活动封面图 *</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="activity-thumbnail"
+                      placeholder="请输入图片URL"
+                      className="flex-1"
+                      required
+                    />
+                    <Button type="button" variant="outline">
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      上传图片
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    推荐尺寸：1200x675px (16:9)，格式：JPG/PNG
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="activity-link">活动详情页链接</Label>
+                  <Input
+                    id="activity-link"
+                    placeholder="如：/activities/spring-2024"
+                  />
+                </div>
+              </div>
+
+              {/* 联系方式 */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm text-gray-700 border-b pb-2">联系方式</h4>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="activity-contact-person">联系人</Label>
+                    <Input
+                      id="activity-contact-person"
+                      placeholder="请输入联系人姓名"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="activity-contact-phone">联系电话</Label>
+                    <Input
+                      id="activity-contact-phone"
+                      type="tel"
+                      placeholder="请输入联系电话"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="activity-contact-email">联系邮箱</Label>
+                  <Input
+                    id="activity-contact-email"
+                    type="email"
+                    placeholder="请输入联系邮箱"
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setActivityDialogOpen(false)}>
+                取消
+              </Button>
+              <Button type="button" variant="secondary">
+                保存草稿
+              </Button>
+              <Button type="submit">
+                创建活动
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* 收集表单创建对话框 */}
+      <Dialog open={formDialogOpen} onOpenChange={(open) => {
+        setFormDialogOpen(open);
+        if (!open) {
+          setFormFields([]);
+        }
+      }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>创建收集表单</DialogTitle>
+            <DialogDescription>
+              设计自定义表单，收集用户信息和反馈
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={(e) => { 
+            e.preventDefault(); 
+            setFormDialogOpen(false);
+            setFormFields([]);
+          }}>
+            <div className="space-y-6 py-4">
+              {/* 基本信息 */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm text-gray-700 border-b pb-2">基本信息</h4>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="form-name">表单名称 *</Label>
+                    <Input
+                      id="form-name"
+                      placeholder="如：产品咨询表单"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="form-type">表单类型 *</Label>
+                    <Select defaultValue="inquiry">
+                      <SelectTrigger>
+                        <SelectValue placeholder="选择类型" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="inquiry">产品咨询</SelectItem>
+                        <SelectItem value="service">售后服务</SelectItem>
+                        <SelectItem value="partnership">商务合作</SelectItem>
+                        <SelectItem value="event">活动报名</SelectItem>
+                        <SelectItem value="feedback">意见反馈</SelectItem>
+                        <SelectItem value="other">其他</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="form-description">表单描述</Label>
+                  <Textarea
+                    id="form-description"
+                    placeholder="简要描述此表单的用途"
+                    rows={2}
+                  />
+                </div>
+              </div>
+
+              {/* 表单字段配置 */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <h4 className="font-medium text-sm text-gray-700">表单字段</h4>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      const newField = {
+                        id: formFields.length + 1,
+                        label: "",
+                        type: "text",
+                        required: false,
+                        options: []
+                      };
+                      setFormFields([...formFields, newField]);
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    添加字段
+                  </Button>
+                </div>
+
+                {formFields.length === 0 ? (
+                  <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                    <Smartphone className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                    <p className="text-sm text-gray-600 mb-2">暂无表单字段</p>
+                    <p className="text-xs text-gray-500 mb-4">点击"添加字段"开始设计表单</p>
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={() => {
+                        const newField = {
+                          id: 1,
+                          label: "",
+                          type: "text",
+                          required: false,
+                          options: []
+                        };
+                        setFormFields([newField]);
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      添加第一个字段
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {formFields.map((field, index) => (
+                      <div key={field.id} className="p-4 border rounded-lg bg-gray-50">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-medium text-sm">
+                            {index + 1}
+                          </div>
+                          <div className="flex-1 grid grid-cols-3 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs">字段名称 *</Label>
+                              <Input
+                                placeholder="如：姓名"
+                                value={field.label}
+                                onChange={(e) => {
+                                  const updated = [...formFields];
+                                  updated[index].label = e.target.value;
+                                  setFormFields(updated);
+                                }}
+                                required
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">字段类型 *</Label>
+                              <Select 
+                                value={field.type}
+                                onValueChange={(value) => {
+                                  const updated = [...formFields];
+                                  updated[index].type = value;
+                                  setFormFields(updated);
+                                }}
+                              >
+                                <SelectTrigger className="h-9">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="text">单行文本</SelectItem>
+                                  <SelectItem value="textarea">多行文本</SelectItem>
+                                  <SelectItem value="number">数字</SelectItem>
+                                  <SelectItem value="phone">手机号</SelectItem>
+                                  <SelectItem value="email">邮箱</SelectItem>
+                                  <SelectItem value="date">日期</SelectItem>
+                                  <SelectItem value="datetime">日期时间</SelectItem>
+                                  <SelectItem value="select">下拉选择</SelectItem>
+                                  <SelectItem value="file">文件上传</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">是否必填</Label>
+                              <div className="flex items-center h-9">
+                                <Switch
+                                  checked={field.required}
+                                  onCheckedChange={(checked) => {
+                                    const updated = [...formFields];
+                                    updated[index].required = checked;
+                                    setFormFields(updated);
+                                  }}
+                                />
+                                <span className="ml-2 text-sm text-gray-600">
+                                  {field.required ? "必填" : "可选"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setFormFields(formFields.filter((_, i) => i !== index));
+                            }}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        
+                        {/* 下拉选择的选项配置 */}
+                        {field.type === "select" && (
+                          <div className="mt-3 pt-3 border-t">
+                            <Label className="text-xs mb-2 block">下拉选项（每行一个）</Label>
+                            <Textarea
+                              placeholder="选项1&#10;选项2&#10;选项3"
+                              rows={3}
+                              className="text-sm"
+                              onChange={(e) => {
+                                const updated = [...formFields];
+                                updated[index].options = e.target.value.split('\n').filter(o => o.trim());
+                                setFormFields(updated);
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 表单设置 */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm text-gray-700 border-b pb-2">表单设置</h4>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between space-y-0 rounded-lg border p-3">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm font-medium">提交后显示感谢页面</Label>
+                      <p className="text-xs text-gray-600">用户提交后显示感谢信息</p>
+                    </div>
+                    <Switch defaultChecked={true} />
+                  </div>
+
+                  <div className="flex items-center justify-between space-y-0 rounded-lg border p-3">
+                    <div className="space-y-0.5">
+                      <Label className="text-sm font-medium">邮件通知管理员</Label>
+                      <p className="text-xs text-gray-600">有新提交时发送邮件</p>
+                    </div>
+                    <Switch defaultChecked={false} />
+                  </div>
+                </div>
+              </div>
+
+              {/* 预览提示 */}
+              {formFields.length > 0 && (
+                <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
+                  <div className="flex gap-3">
+                    <div className="flex-shrink-0">
+                      <Eye className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-blue-900 mb-1">
+                        表单预览
+                      </p>
+                      <p className="text-xs text-blue-700 mb-2">
+                        您已添加 {formFields.length} 个字段，其中 {formFields.filter(f => f.required).length} 个必填
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {formFields.map((field) => (
+                          <Badge key={field.id} variant="secondary" className="text-xs">
+                            {field.label || "未命名"}
+                            {field.required && <span className="text-red-500 ml-1">*</span>}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => {
+                setFormDialogOpen(false);
+                setFormFields([]);
+              }}>
+                取消
+              </Button>
+              <Button type="submit" disabled={formFields.length === 0}>
+                创建表单
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* 用户指南对话框 */}
+      <Dialog open={guideDialogOpen} onOpenChange={(open) => {
+        setGuideDialogOpen(open);
+        if (!open) {
+          setCurrentTags([]);
+          setTagInput("");
+        }
+      }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>添加用户指南</DialogTitle>
+            <DialogDescription>
+              创建RICOH产品使用技巧和操作指南
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={(e) => { 
+            e.preventDefault(); 
+            setGuideDialogOpen(false);
+            setCurrentTags([]);
+            setTagInput("");
+          }}>
+            <div className="space-y-6 py-4">
+              {/* 基本信息 */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm text-gray-700 border-b pb-2">基本信息</h4>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="guide-title">指南标题 *</Label>
+                  <Input
+                    id="guide-title"
+                    placeholder="例如：如何设置双面打印节省纸张"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="guide-product">适用产品 *</Label>
+                    <Select defaultValue="all">
+                      <SelectTrigger>
+                        <SelectValue placeholder="选择产品" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">全系列</SelectItem>
+                        <SelectItem value="im-c">RICOH IM C系列</SelectItem>
+                        <SelectItem value="mp">RICOH MP系列</SelectItem>
+                        <SelectItem value="sp">RICOH SP系列</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="guide-category">指南分类 *</Label>
+                    <Select defaultValue="basic">
+                      <SelectTrigger>
+                        <SelectValue placeholder="选择分类" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="basic">基础操作</SelectItem>
+                        <SelectItem value="maintenance">维护保养</SelectItem>
+                        <SelectItem value="troubleshooting">故障排除</SelectItem>
+                        <SelectItem value="advanced">高级功能</SelectItem>
+                        <SelectItem value="security">安全功能</SelectItem>
+                        <SelectItem value="optimization">性能优化</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="guide-difficulty">难度等级 *</Label>
+                    <Select defaultValue="simple">
+                      <SelectTrigger>
+                        <SelectValue placeholder="选择难度" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="simple">简单</SelectItem>
+                        <SelectItem value="medium">中等</SelectItem>
+                        <SelectItem value="hard">困难</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* 内容编辑 */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm text-gray-700 border-b pb-2">内容编辑</h4>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="guide-content">指南内容 *</Label>
+                  <Textarea
+                    id="guide-content"
+                    placeholder="请输入详细的操作步骤和说明&#10;&#10;建议格式：&#10;1. 第一步操作说明&#10;2. 第二步操作说明&#10;...&#10;&#10;💡 小贴士：可以添加实用提示&#10;⚠️ 注意事项：重要警告信息"
+                    rows={18}
+                    required
+                    className="font-mono text-sm"
+                  />
+                  <p className="text-xs text-gray-500">
+                    支持使用emoji图标增强可读性：💡 ⚠️ ✅ ❌ 📝 🔧 等
+                  </p>
+                </div>
+              </div>
+
+              {/* 标签管理 */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm text-gray-700 border-b pb-2">标签管理</h4>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="guide-tags">指南标签</Label>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        id="guide-tags"
+                        placeholder="输入标签后按回车添加"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (tagInput.trim() && !currentTags.includes(tagInput.trim())) {
+                              setCurrentTags([...currentTags, tagInput.trim()]);
+                              setTagInput("");
+                            }
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          if (tagInput.trim() && !currentTags.includes(tagInput.trim())) {
+                            setCurrentTags([...currentTags, tagInput.trim()]);
+                            setTagInput("");
+                          }
+                        }}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        添加
+                      </Button>
+                    </div>
+                    {currentTags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border">
+                        {currentTags.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-sm">
+                            {tag}
+                            <X
+                              className="h-3 w-3 ml-1 cursor-pointer hover:text-red-600"
+                              onClick={() => setCurrentTags(currentTags.filter(t => t !== tag))}
+                            />
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-500">
+                      添加标签便于用户快速检索，如：节能环保、双面打印、故障排除等
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 缩略图 */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm text-gray-700 border-b pb-2">媒体资源</h4>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="guide-thumbnail">封面图片（可选）</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="guide-thumbnail"
+                      placeholder="请输入图片URL"
+                      className="flex-1"
+                    />
+                    <Button type="button" variant="outline">
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      上传图片
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    建议尺寸：800x600px，格式：JPG/PNG
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setGuideDialogOpen(false)}>
+                取消
+              </Button>
+              <Button type="submit">
+                <BookOpen className="h-4 w-4 mr-2" />
+                创建指南
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
