@@ -619,6 +619,45 @@ type UserGuideItem = (typeof mockUserGuides)[number];
 type TrainingCourseItem = (typeof mockTrainingCourses)[number];
 type CertificationItem = (typeof mockCertifications)[number];
 
+const bannerTagMap: Record<number, string[]> = {
+  1: ["homepage", "campaign", "new"],
+  2: ["homepage", "product", "launch"],
+  3: ["sidebar", "enterprise", "solution"],
+  4: ["splash", "holiday", "brand"],
+};
+
+const notificationTagMap: Record<number, string[]> = {
+  1: ["system", "maintenance", "important"],
+  2: ["marketing", "new-product", "dealers"],
+  3: ["marketing", "campaign", "customers"],
+};
+
+const formTagMap: Record<number, string[]> = {
+  1: ["inquiry", "product", "lead"],
+  2: ["service", "support", "after-sales"],
+  3: ["partnership", "channel", "business"],
+  4: ["event", "registration", "marketing"],
+};
+
+const productTagMap: Record<number, string[]> = {
+  101: ["color-mfp", "office", "mid-volume"],
+  102: ["color-mfp", "workgroup", "high-volume"],
+  103: ["smart", "security", "energy-saving"],
+  104: ["premium", "production", "enterprise"],
+};
+
+const courseTagMap: Record<number, string[]> = {
+  1: ["beginner", "operation"],
+  2: ["maintenance", "troubleshooting"],
+  3: ["sales", "advanced"],
+};
+
+const certificationTagMap: Record<number, string[]> = {
+  1: ["junior", "product"],
+  2: ["intermediate", "maintenance"],
+  3: ["senior", "sales"],
+};
+
 export default function ContentManagement() {
   const [mainTab, setMainTab] = useState("banners");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -650,10 +689,16 @@ export default function ContentManagement() {
   
   // 标签管理状态
   const [selectedTags, setSelectedTags] = useState<Record<string, string[]>>({
+    banners: [],
     cases: [],
     activities: [],
     news: [],
+    notifications: [],
+    forms: [],
+    products: [],
     guides: [],
+    courses: [],
+    certifications: [],
   });
   const [tagInput, setTagInput] = useState("");
   const [currentTags, setCurrentTags] = useState<string[]>([]);
@@ -691,10 +736,53 @@ export default function ContentManagement() {
     setProducts(updatedProducts);
   }, []);
 
-  const filteredProducts = products.filter((product) =>
-    product.title.toLowerCase().includes(productSearchTerm.toLowerCase()) ||
-    product.productCode.toLowerCase().includes(productSearchTerm.toLowerCase())
-  );
+  const getBannerTags = (id: number) => bannerTagMap[id] || [];
+  const getNotificationTags = (id: number) => notificationTagMap[id] || [];
+  const getFormTags = (id: number) => formTagMap[id] || [];
+  const getProductTags = (id: number) => productTagMap[id] || [];
+  const getCourseTags = (id: number) => courseTagMap[id] || [];
+  const getCertificationTags = (id: number) => certificationTagMap[id] || [];
+
+  const filteredBanners = banners.filter((banner) => {
+    const tags = getBannerTags(banner.id);
+    return (
+      !selectedTags.banners ||
+      selectedTags.banners.length === 0 ||
+      selectedTags.banners.some((tag: string) => tags.includes(tag))
+    );
+  });
+
+  const filteredNotifications = notifications.filter((notification) => {
+    const tags = getNotificationTags(notification.id);
+    return (
+      !selectedTags.notifications ||
+      selectedTags.notifications.length === 0 ||
+      selectedTags.notifications.some((tag: string) => tags.includes(tag))
+    );
+  });
+
+  const filteredForms = forms.filter((form) => {
+    const tags = getFormTags(form.id);
+    return (
+      !selectedTags.forms ||
+      selectedTags.forms.length === 0 ||
+      selectedTags.forms.some((tag: string) => tags.includes(tag))
+    );
+  });
+
+  const filteredProducts = products.filter((product) => {
+    const tags = getProductTags(product.id);
+    const matchSearch =
+      product.title.toLowerCase().includes(productSearchTerm.toLowerCase()) ||
+      product.productCode.toLowerCase().includes(productSearchTerm.toLowerCase()) ||
+      tags.some((tag: string) => tag.toLowerCase().includes(productSearchTerm.toLowerCase()));
+    const matchTags =
+      !selectedTags.products ||
+      selectedTags.products.length === 0 ||
+      selectedTags.products.some((tag: string) => tags.includes(tag));
+
+    return matchSearch && matchTags;
+  });
 
   const filteredGuides = userGuides.filter((guide) => {
     const matchSearch = guide.title.toLowerCase().includes(guideSearchTerm.toLowerCase()) ||
@@ -707,17 +795,35 @@ export default function ContentManagement() {
     return matchSearch && matchCategory && matchDifficulty && matchTags;
   });
 
-  const filteredCourses = trainingCourses.filter((course) =>
-    course.title.toLowerCase().includes(courseSearchTerm.toLowerCase()) ||
-    course.category.toLowerCase().includes(courseSearchTerm.toLowerCase()) ||
-    course.instructor.toLowerCase().includes(courseSearchTerm.toLowerCase())
-  );
+  const filteredCourses = trainingCourses.filter((course) => {
+    const tags = getCourseTags(course.id);
+    const matchSearch =
+      course.title.toLowerCase().includes(courseSearchTerm.toLowerCase()) ||
+      course.category.toLowerCase().includes(courseSearchTerm.toLowerCase()) ||
+      course.instructor.toLowerCase().includes(courseSearchTerm.toLowerCase()) ||
+      tags.some((tag: string) => tag.toLowerCase().includes(courseSearchTerm.toLowerCase()));
+    const matchTags =
+      !selectedTags.courses ||
+      selectedTags.courses.length === 0 ||
+      selectedTags.courses.some((tag: string) => tags.includes(tag));
 
-  const filteredCertifications = certifications.filter((cert) =>
-    cert.name.toLowerCase().includes(certSearchTerm.toLowerCase()) ||
-    cert.examCode.toLowerCase().includes(certSearchTerm.toLowerCase()) ||
-    cert.relatedCourse.toLowerCase().includes(certSearchTerm.toLowerCase())
-  );
+    return matchSearch && matchTags;
+  });
+
+  const filteredCertifications = certifications.filter((cert) => {
+    const tags = getCertificationTags(cert.id);
+    const matchSearch =
+      cert.name.toLowerCase().includes(certSearchTerm.toLowerCase()) ||
+      cert.examCode.toLowerCase().includes(certSearchTerm.toLowerCase()) ||
+      cert.relatedCourse.toLowerCase().includes(certSearchTerm.toLowerCase()) ||
+      tags.some((tag: string) => tag.toLowerCase().includes(certSearchTerm.toLowerCase()));
+    const matchTags =
+      !selectedTags.certifications ||
+      selectedTags.certifications.length === 0 ||
+      selectedTags.certifications.some((tag: string) => tags.includes(tag));
+
+    return matchSearch && matchTags;
+  });
 
   const handleDelete = (id: number, type: string) => {
     switch(type) {
@@ -890,6 +996,51 @@ export default function ContentManagement() {
                 </Button>
               </div>
 
+              {banners.some((b) => getBannerTags(b.id).length > 0) && (
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Tag className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-medium text-gray-700">标签快捷索引</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from(new Set(banners.flatMap((b) => getBannerTags(b.id)))).map((tag: string) => {
+                      const isSelected = selectedTags.banners?.includes(tag);
+                      return (
+                        <Badge
+                          key={tag}
+                          variant={isSelected ? "default" : "outline"}
+                          className={`cursor-pointer transition-all ${
+                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
+                          }`}
+                          onClick={() => {
+                            const currentSelected = selectedTags.banners || [];
+                            setSelectedTags({
+                              ...selectedTags,
+                              banners: isSelected
+                                ? currentSelected.filter((t: string) => t !== tag)
+                                : [...currentSelected, tag]
+                            });
+                          }}
+                        >
+                          {tag}
+                          {isSelected && <X className="h-3 w-3 ml-1" />}
+                        </Badge>
+                      );
+                    })}
+                    {selectedTags.banners && selectedTags.banners.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedTags({ ...selectedTags, banners: [] })}
+                        className="h-6 text-xs"
+                      >
+                        清除筛选
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="border rounded-lg">
                 <Table>
                   <TableHeader>
@@ -906,7 +1057,7 @@ export default function ContentManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {banners.map((banner) => (
+                    {filteredBanners.map((banner) => (
                       <TableRow key={banner.id}>
                         <TableCell>
                           <img 
@@ -915,7 +1066,18 @@ export default function ContentManagement() {
                             className="w-24 h-12 object-cover rounded"
                           />
                         </TableCell>
-                        <TableCell className="font-medium">{banner.title}</TableCell>
+                        <TableCell className="font-medium">
+                          <div>{banner.title}</div>
+                          {getBannerTags(banner.id).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {getBannerTags(banner.id).slice(0, 2).map((tag: string) => (
+                                <Badge key={tag} variant="secondary" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <Badge variant={banner.position === "开屏广告" ? "default" : "outline"}>
                             {banner.position}
@@ -1355,6 +1517,51 @@ export default function ContentManagement() {
                 </Button>
               </div>
 
+              {notifications.some((n) => getNotificationTags(n.id).length > 0) && (
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Tag className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-medium text-gray-700">标签快捷索引</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from(new Set(notifications.flatMap((n) => getNotificationTags(n.id)))).map((tag: string) => {
+                      const isSelected = selectedTags.notifications?.includes(tag);
+                      return (
+                        <Badge
+                          key={tag}
+                          variant={isSelected ? "default" : "outline"}
+                          className={`cursor-pointer transition-all ${
+                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
+                          }`}
+                          onClick={() => {
+                            const currentSelected = selectedTags.notifications || [];
+                            setSelectedTags({
+                              ...selectedTags,
+                              notifications: isSelected
+                                ? currentSelected.filter((t: string) => t !== tag)
+                                : [...currentSelected, tag]
+                            });
+                          }}
+                        >
+                          {tag}
+                          {isSelected && <X className="h-3 w-3 ml-1" />}
+                        </Badge>
+                      );
+                    })}
+                    {selectedTags.notifications && selectedTags.notifications.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedTags({ ...selectedTags, notifications: [] })}
+                        className="h-6 text-xs"
+                      >
+                        清除筛选
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="border rounded-lg">
                 <Table>
                   <TableHeader>
@@ -1371,9 +1578,20 @@ export default function ContentManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {notifications.map((notification) => (
+                    {filteredNotifications.map((notification) => (
                       <TableRow key={notification.id}>
-                        <TableCell className="font-medium">{notification.title}</TableCell>
+                        <TableCell className="font-medium">
+                          <div>{notification.title}</div>
+                          {getNotificationTags(notification.id).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {getNotificationTags(notification.id).slice(0, 2).map((tag: string) => (
+                                <Badge key={tag} variant="secondary" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell className="max-w-xs truncate">{notification.content}</TableCell>
                         <TableCell>
                           {notification.enableLink && notification.link ? (
@@ -1452,8 +1670,53 @@ export default function ContentManagement() {
                 </Button>
               </div>
 
+              {forms.some((f) => getFormTags(f.id).length > 0) && (
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Tag className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-medium text-gray-700">标签快捷索引</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from(new Set(forms.flatMap((f) => getFormTags(f.id)))).map((tag: string) => {
+                      const isSelected = selectedTags.forms?.includes(tag);
+                      return (
+                        <Badge
+                          key={tag}
+                          variant={isSelected ? "default" : "outline"}
+                          className={`cursor-pointer transition-all ${
+                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
+                          }`}
+                          onClick={() => {
+                            const currentSelected = selectedTags.forms || [];
+                            setSelectedTags({
+                              ...selectedTags,
+                              forms: isSelected
+                                ? currentSelected.filter((t: string) => t !== tag)
+                                : [...currentSelected, tag]
+                            });
+                          }}
+                        >
+                          {tag}
+                          {isSelected && <X className="h-3 w-3 ml-1" />}
+                        </Badge>
+                      );
+                    })}
+                    {selectedTags.forms && selectedTags.forms.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedTags({ ...selectedTags, forms: [] })}
+                        className="h-6 text-xs"
+                      >
+                        清除筛选
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {forms.map((form) => (
+                {filteredForms.map((form) => (
                   <Card key={form.id} className="hover:shadow-md transition-shadow">
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
@@ -1468,6 +1731,15 @@ export default function ContentManagement() {
                     <CardContent className="space-y-4">
                       <div>
                         <h3 className="font-semibold mb-1">{form.name}</h3>
+                        {getFormTags(form.id).length > 0 && (
+                          <div className="flex flex-wrap gap-1 mb-2">
+                            {getFormTags(form.id).slice(0, 3).map((tag: string) => (
+                              <Badge key={tag} variant="secondary" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                         <p className="text-sm text-gray-600 mb-3">{form.description}</p>
                         <div className="space-y-1 text-sm">
                           <div className="flex items-center justify-between">
@@ -1554,6 +1826,51 @@ export default function ContentManagement() {
                 />
               </div>
 
+              {products.some((p) => getProductTags(p.id).length > 0) && (
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Tag className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-medium text-gray-700">标签快捷索引</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from(new Set(products.flatMap((p) => getProductTags(p.id)))).map((tag: string) => {
+                      const isSelected = selectedTags.products?.includes(tag);
+                      return (
+                        <Badge
+                          key={tag}
+                          variant={isSelected ? "default" : "outline"}
+                          className={`cursor-pointer transition-all ${
+                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
+                          }`}
+                          onClick={() => {
+                            const currentSelected = selectedTags.products || [];
+                            setSelectedTags({
+                              ...selectedTags,
+                              products: isSelected
+                                ? currentSelected.filter((t: string) => t !== tag)
+                                : [...currentSelected, tag]
+                            });
+                          }}
+                        >
+                          {tag}
+                          {isSelected && <X className="h-3 w-3 ml-1" />}
+                        </Badge>
+                      );
+                    })}
+                    {selectedTags.products && selectedTags.products.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedTags({ ...selectedTags, products: [] })}
+                        className="h-6 text-xs"
+                      >
+                        清除筛选
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {filteredProducts.map((product: ProductItem) => (
                   <Card key={product.id} className="overflow-hidden hover:shadow-md transition-shadow border-blue-100">
@@ -1573,6 +1890,15 @@ export default function ContentManagement() {
                     <CardContent className="p-4 space-y-3">
                       <div>
                         <h3 className="font-semibold mb-1 text-blue-900">{product.title}</h3>
+                        {getProductTags(product.id).length > 0 && (
+                          <div className="flex flex-wrap gap-1 mb-2">
+                            {getProductTags(product.id).slice(0, 3).map((tag: string) => (
+                              <Badge key={tag} variant="secondary" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                         <p className="text-sm text-gray-600 line-clamp-2">{product.features}</p>
                       </div>
                       
@@ -1890,6 +2216,51 @@ export default function ContentManagement() {
                 />
               </div>
 
+              {trainingCourses.some((c) => getCourseTags(c.id).length > 0) && (
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Tag className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-medium text-gray-700">标签快捷索引</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from(new Set(trainingCourses.flatMap((c) => getCourseTags(c.id)))).map((tag: string) => {
+                      const isSelected = selectedTags.courses?.includes(tag);
+                      return (
+                        <Badge
+                          key={tag}
+                          variant={isSelected ? "default" : "outline"}
+                          className={`cursor-pointer transition-all ${
+                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
+                          }`}
+                          onClick={() => {
+                            const currentSelected = selectedTags.courses || [];
+                            setSelectedTags({
+                              ...selectedTags,
+                              courses: isSelected
+                                ? currentSelected.filter((t: string) => t !== tag)
+                                : [...currentSelected, tag]
+                            });
+                          }}
+                        >
+                          {tag}
+                          {isSelected && <X className="h-3 w-3 ml-1" />}
+                        </Badge>
+                      );
+                    })}
+                    {selectedTags.courses && selectedTags.courses.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedTags({ ...selectedTags, courses: [] })}
+                        className="h-6 text-xs"
+                      >
+                        清除筛选
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="border rounded-lg">
                 <Table>
                   <TableHeader>
@@ -1908,7 +2279,18 @@ export default function ContentManagement() {
                   <TableBody>
                     {filteredCourses.map((course: TrainingCourseItem) => (
                       <TableRow key={course.id}>
-                        <TableCell className="font-medium">{course.title}</TableCell>
+                        <TableCell className="font-medium">
+                          <div>{course.title}</div>
+                          {getCourseTags(course.id).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {getCourseTags(course.id).slice(0, 2).map((tag: string) => (
+                                <Badge key={tag} variant="secondary" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell>{course.category}</TableCell>
                         <TableCell>
                           <Badge variant="outline">{course.level}</Badge>
@@ -1966,6 +2348,51 @@ export default function ContentManagement() {
                 />
               </div>
 
+              {certifications.some((c) => getCertificationTags(c.id).length > 0) && (
+                <div className="bg-gray-50 rounded-lg p-4 border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Tag className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-medium text-gray-700">标签快捷索引</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from(new Set(certifications.flatMap((c) => getCertificationTags(c.id)))).map((tag: string) => {
+                      const isSelected = selectedTags.certifications?.includes(tag);
+                      return (
+                        <Badge
+                          key={tag}
+                          variant={isSelected ? "default" : "outline"}
+                          className={`cursor-pointer transition-all ${
+                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
+                          }`}
+                          onClick={() => {
+                            const currentSelected = selectedTags.certifications || [];
+                            setSelectedTags({
+                              ...selectedTags,
+                              certifications: isSelected
+                                ? currentSelected.filter((t: string) => t !== tag)
+                                : [...currentSelected, tag]
+                            });
+                          }}
+                        >
+                          {tag}
+                          {isSelected && <X className="h-3 w-3 ml-1" />}
+                        </Badge>
+                      );
+                    })}
+                    {selectedTags.certifications && selectedTags.certifications.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedTags({ ...selectedTags, certifications: [] })}
+                        className="h-6 text-xs"
+                      >
+                        清除筛选
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="border rounded-lg">
                 <Table>
                   <TableHeader>
@@ -1985,7 +2412,18 @@ export default function ContentManagement() {
                   <TableBody>
                     {filteredCertifications.map((cert: CertificationItem) => (
                       <TableRow key={cert.id}>
-                        <TableCell className="font-medium">{cert.name}</TableCell>
+                        <TableCell className="font-medium">
+                          <div>{cert.name}</div>
+                          {getCertificationTags(cert.id).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {getCertificationTags(cert.id).slice(0, 2).map((tag: string) => (
+                                <Badge key={tag} variant="secondary" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell className="font-mono text-xs">{cert.examCode}</TableCell>
                         <TableCell>{cert.relatedCourse}</TableCell>
                         <TableCell>{cert.questionCount}</TableCell>
