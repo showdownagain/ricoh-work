@@ -19,6 +19,7 @@ import {
   MapPin,
   Download,
   Edit,
+  Upload,
 } from "lucide-react";
 import {
   Dialog,
@@ -98,6 +99,10 @@ type OrderItem = {
   contractCustomerSignTime: string;
   contractMerchantSignTime: string;
   contractSignedTime: string;
+  invoiceNo?: string;
+  invoiceFileUrl?: string;
+  invoiceUploadTime?: string;
+  invoiceRemark?: string;
 };
 
 const now = () => new Date().toLocaleString("zh-CN");
@@ -280,6 +285,64 @@ const mockOrders: OrderItem[] = [
     contractMerchantSignTime: "",
     contractSignedTime: "",
   },
+  {
+    id: 7,
+    orderNo: "ORD202402250007",
+    customerName: "南京某教育科技有限公司",
+    customerPhone: "025-7777****",
+    customerAddress: "江苏省南京市雨花台区软件大道",
+    customerCity: "南京",
+    dealerName: "南京理光经销商G",
+    dealerContact: "孙经理",
+    dealerPhone: "025-8888-6666",
+    products: [{ sku: "RICOH-IM-C3500", name: "RICOH IM C3500", quantity: 1, price: 23999 }],
+    totalAmount: 23999,
+    status: "paid",
+    hasStock: true,
+    stockConfirmTime: "2024-02-25 09:20",
+    stockConfirmNote: "库存已确认，等待仓库出库",
+    paymentTime: "2024-02-25 10:05",
+    shippingCompany: "",
+    trackingNo: "",
+    shippingTime: "",
+    receivedTime: "",
+    createTime: "2024-02-25 08:50",
+    requiresContract: true,
+    contractFlowStatus: "signed",
+    contractCheckedTime: "2024-02-25 08:52",
+    contractCustomerSignTime: "2024-02-25 09:00",
+    contractMerchantSignTime: "2024-02-25 09:10",
+    contractSignedTime: "2024-02-25 09:10",
+  },
+  {
+    id: 8,
+    orderNo: "ORD202402260008",
+    customerName: "苏州某工业设备有限公司",
+    customerPhone: "0512-6666****",
+    customerAddress: "江苏省苏州市工业园区金鸡湖大道",
+    customerCity: "苏州",
+    dealerName: "苏州理光经销商H",
+    dealerContact: "钱经理",
+    dealerPhone: "0512-8888-2222",
+    products: [{ sku: "RICOH-MP-C4504", name: "RICOH MP C4504", quantity: 1, price: 26999 }],
+    totalAmount: 26999,
+    status: "pending_stock",
+    hasStock: null,
+    stockConfirmTime: "",
+    stockConfirmNote: "",
+    paymentTime: "",
+    shippingCompany: "",
+    trackingNo: "",
+    shippingTime: "",
+    receivedTime: "",
+    createTime: "2024-02-26 09:30",
+    requiresContract: true,
+    contractFlowStatus: "signed",
+    contractCheckedTime: "2024-02-26 09:31",
+    contractCustomerSignTime: "2024-02-26 09:40",
+    contractMerchantSignTime: "2024-02-26 09:50",
+    contractSignedTime: "2024-02-26 09:50",
+  },
 ];
 
 const orderStatusMap: Record<
@@ -311,9 +374,11 @@ export default function OrderManagement() {
   const [detailDialog, setDetailDialog] = useState(false);
   const [stockDialog, setStockDialog] = useState(false);
   const [shippingDialog, setShippingDialog] = useState(false);
+  const [invoiceDialog, setInvoiceDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
   const [stockForm, setStockForm] = useState({ hasStock: true, note: "" });
   const [shippingForm, setShippingForm] = useState({ shippingCompany: "", trackingNo: "" });
+  const [invoiceForm, setInvoiceForm] = useState({ invoiceNo: "", invoiceFileUrl: "", remark: "" });
 
   const filteredOrders = orders.filter((order) => {
     const matchSearch =
@@ -435,6 +500,47 @@ export default function OrderManagement() {
     setDetailDialog(false);
   };
 
+  const handleOpenInvoiceDialog = (order: OrderItem) => {
+    setSelectedOrder(order);
+    setInvoiceForm({
+      invoiceNo: order.invoiceNo || "",
+      invoiceFileUrl: order.invoiceFileUrl || "",
+      remark: order.invoiceRemark || "",
+    });
+    setInvoiceDialog(true);
+  };
+
+  const handleSubmitInvoice = () => {
+    if (!selectedOrder) return;
+    if (!invoiceForm.invoiceNo.trim() || !invoiceForm.invoiceFileUrl.trim()) {
+      alert("请填写发票号和电子发票文件");
+      return;
+    }
+    const uploadedAt = now();
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === selectedOrder.id
+          ? {
+              ...order,
+              invoiceNo: invoiceForm.invoiceNo.trim(),
+              invoiceFileUrl: invoiceForm.invoiceFileUrl.trim(),
+              invoiceRemark: invoiceForm.remark.trim(),
+              invoiceUploadTime: uploadedAt,
+            }
+          : order,
+      ),
+    );
+    setInvoiceDialog(false);
+  };
+
+  const handleViewInvoice = (order: OrderItem) => {
+    if (!order.invoiceFileUrl) {
+      alert("该订单暂未上传电子发票");
+      return;
+    }
+    window.open(order.invoiceFileUrl, "_blank", "noopener,noreferrer");
+  };
+
   const handleExportReport = () => {
     const reportData = filteredOrders.map((order) => ({
       "订单号": order.orderNo,
@@ -482,6 +588,32 @@ export default function OrderManagement() {
 
   return (
     <div className="space-y-6">
+      <Card className="bg-blue-50 border-blue-200">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-3">
+            <div className="bg-blue-500 text-white rounded-full p-2">
+              <AlertCircle className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-blue-900 mb-1">订单状态流转说明</h3>
+              <p className="text-sm text-blue-800">
+                订单状态与触发条件如下（按流转顺序）：
+              </p>
+              <ul className="text-sm text-blue-800 mt-2 space-y-1 list-disc list-inside">
+                <li>待确认库存：创建订单</li>
+                <li>无库存取消：无库存</li>
+                <li>待客户签署：有库存 + 需要合同</li>
+                <li>待商家签署：有库存 + 需要合同 + 客户签署</li>
+                <li>待付款：无需合同 或 双签确认完成</li>
+                <li>已付款：已上传付款凭证</li>
+                <li>已发货：已填写物流单号</li>
+                <li>已完成：已确认收货</li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-6 md:grid-cols-5">
         <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-gray-600">总订单</CardTitle><FileText className="h-5 w-5 text-blue-600" /></CardHeader><CardContent><div className="text-2xl font-bold">{orders.length}</div><p className="text-sm text-blue-600 font-semibold mt-1">¥{getTotalAmount().toLocaleString()}</p></CardContent></Card>
         <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-gray-600">待确认库存</CardTitle><AlertCircle className="h-5 w-5 text-orange-600" /></CardHeader><CardContent><div className="text-2xl font-bold">{getStatusCount("pending_stock")}</div></CardContent></Card>
@@ -546,7 +678,12 @@ export default function OrderManagement() {
                         <TableCell><Badge variant={order.requiresContract ? "default" : "secondary"}>{order.requiresContract ? "需要合同" : "无需合同"}</Badge></TableCell>
                         <TableCell><Badge variant={orderStatusMap[order.status].variant} className="gap-1"><StatusIcon className="h-3 w-3" />{orderStatusMap[order.status].label}</Badge></TableCell>
                         <TableCell className="text-sm">{order.createTime}</TableCell>
-                        <TableCell className="text-right"><Button variant="ghost" size="sm" onClick={() => handleViewOrder(order)}><Eye className="h-4 w-4 mr-2" />查看</Button></TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="sm" onClick={() => handleViewOrder(order)}><Eye className="h-4 w-4 mr-2" />查看</Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleViewInvoice(order)}><FileText className="h-4 w-4 mr-2" />电子发票</Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -569,6 +706,9 @@ export default function OrderManagement() {
                   {selectedOrder.status === "pending_merchant_sign" && <Button onClick={() => handleMerchantSignedContract(selectedOrder.id)}><Edit className="h-4 w-4 mr-2" />商家已签署</Button>}
                   {selectedOrder.status === "pending_stock" && <Button onClick={() => handleOpenStockDialog(selectedOrder)}><Phone className="h-4 w-4 mr-2" />确认库存</Button>}
                   {selectedOrder.status === "paid" && <Button onClick={() => handleOpenShippingDialog(selectedOrder)}><Truck className="h-4 w-4 mr-2" />填写物流</Button>}
+                  {(selectedOrder.status === "paid" || selectedOrder.status === "shipped" || selectedOrder.status === "completed") && (
+                    <Button variant="outline" onClick={() => handleOpenInvoiceDialog(selectedOrder)}><Upload className="h-4 w-4 mr-2" />上传电子发票</Button>
+                  )}
                   {selectedOrder.status === "shipped" && <Button variant="outline" onClick={() => handleConfirmReceived(selectedOrder.id)}><CheckCircle className="h-4 w-4 mr-2" />模拟确认收货</Button>}
                 </div>
               </div>
@@ -601,6 +741,7 @@ export default function OrderManagement() {
                   {selectedOrder.stockConfirmTime && <div className="p-3 bg-gray-50 rounded">库存确认：{selectedOrder.stockConfirmTime}（{selectedOrder.stockConfirmNote}）</div>}
                   {selectedOrder.paymentTime && <div className="p-3 bg-gray-50 rounded">客户付款：{selectedOrder.paymentTime}</div>}
                   {selectedOrder.shippingTime && <div className="p-3 bg-gray-50 rounded">发货：{selectedOrder.shippingCompany} - {selectedOrder.trackingNo}（{selectedOrder.shippingTime}）</div>}
+                  {selectedOrder.invoiceUploadTime && <div className="p-3 bg-gray-50 rounded">电子发票上传：{selectedOrder.invoiceNo}（{selectedOrder.invoiceUploadTime}）</div>}
                   {selectedOrder.receivedTime && <div className="p-3 bg-gray-50 rounded">确认收货：{selectedOrder.receivedTime}</div>}
                 </div>
               </div>
@@ -629,6 +770,24 @@ export default function OrderManagement() {
             <div className="space-y-2"><Label htmlFor="trackingNo">物流单号 *</Label><Input id="trackingNo" value={shippingForm.trackingNo} onChange={(e) => setShippingForm({ ...shippingForm, trackingNo: e.target.value })} placeholder="请输入物流单号" /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setShippingDialog(false)}>取消</Button><Button onClick={handleSubmitShipping}>提交物流信息</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={invoiceDialog} onOpenChange={setInvoiceDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader><DialogTitle>上传电子发票</DialogTitle><DialogDescription>上传发票文件或填写电子发票链接。</DialogDescription></DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2"><Label htmlFor="invoiceNo">发票号 *</Label><Input id="invoiceNo" value={invoiceForm.invoiceNo} onChange={(e) => setInvoiceForm({ ...invoiceForm, invoiceNo: e.target.value })} placeholder="请输入发票号" /></div>
+            <div className="space-y-2">
+              <Label htmlFor="invoiceFile">电子发票文件/链接 *</Label>
+              <div className="flex gap-2">
+                <Input id="invoiceFile" value={invoiceForm.invoiceFileUrl} onChange={(e) => setInvoiceForm({ ...invoiceForm, invoiceFileUrl: e.target.value })} placeholder="请输入电子发票链接或文件地址" />
+                <Button type="button" variant="outline"><Upload className="h-4 w-4 mr-2" />上传文件</Button>
+              </div>
+            </div>
+            <div className="space-y-2"><Label htmlFor="invoiceRemark">备注</Label><Textarea id="invoiceRemark" rows={3} value={invoiceForm.remark} onChange={(e) => setInvoiceForm({ ...invoiceForm, remark: e.target.value })} placeholder="选填：开票抬头、税号等说明" /></div>
+          </div>
+          <DialogFooter><Button variant="outline" onClick={() => setInvoiceDialog(false)}>取消</Button><Button onClick={handleSubmitInvoice}>确认上传</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

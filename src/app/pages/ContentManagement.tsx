@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -57,11 +57,98 @@ import {
 import { Switch } from "../components/ui/switch";
 
 // 广告位数据
+const bannerTitleZhMap: Record<string, string> = {
+  spring_promo: "春季新品促销",
+  new_printer_launch: "理光打印机新品发布",
+  enterprise_solution: "企业解决方案",
+  new_year_offer_2024: "理光中国2024开年钜惠",
+};
+
+const bannerPositionZhMap: Record<string, string> = {
+  homepage: "首页轮播",
+  sidebar: "侧边栏",
+  splash: "开屏广告",
+  product: "产品页",
+};
+
+const caseTitleZhMap: Record<string, string> = {
+  manufacturing_digital_transformation: "某大型制造企业数字化转型案例",
+  finance_secure_printing: "金融行业高安全打印解决方案",
+  education_smart_campus: "教育行业智慧校园建设",
+};
+
+const caseCustomerZhMap: Record<string, string> = {
+  shanghai_manufacturing_group: "上海某某制造集团",
+  beijing_bank: "北京某某银行",
+  guangzhou_university: "广州某某大学",
+};
+
+const caseIndustryZhMap: Record<string, string> = {
+  manufacturing: "制造业",
+  finance: "金融业",
+  education: "教育",
+};
+
+const caseSolutionZhMap: Record<string, string> = {
+  intelligent_document_system: "智能文档管理系统",
+  secure_printing_solution: "安全打印解决方案",
+  smart_campus_printing: "智慧校园打印方案",
+};
+
+const caseTagZhMap: Record<string, string> = {
+  digital_transformation: "数字化转型",
+  intelligent_manufacturing: "智能制造",
+  document_management: "文档管理",
+  enterprise: "大型企业",
+  finance: "金融",
+  secure_printing: "安全打印",
+  information_security: "信息安全",
+  banking: "银行",
+  education: "教育",
+  smart_campus: "智慧校园",
+  university: "高校",
+  large_scale_deployment: "批量部署",
+};
+
+const activityTitleZhMap: Record<string, string> = {
+  spring_new_product_launch_2024: "2024春季新品发布会",
+  online_printer_maintenance_workshop: "打印机维护知识在线研讨会",
+  enterprise_digital_transformation_summit: "企业数字化转型峰会",
+};
+
+const activityTypeZhMap: Record<string, string> = {
+  offline: "线下活动",
+  online: "线上活动",
+  hybrid: "线上线下结合",
+};
+
+const activityLocationZhMap: Record<string, string> = {
+  shanghai_expo_center: "上海国际会展中心",
+  live_streaming: "在线直播",
+  beijing_national_conference_center: "北京国家会议中心",
+};
+
+const activityTagZhMap: Record<string, string> = {
+  new_product_launch: "新品发布",
+  offline_activity: "线下活动",
+  online_activity: "线上活动",
+  year_2024: "2024",
+  shanghai: "上海",
+  online_workshop: "在线研讨会",
+  technical_training: "技术培训",
+  maintenance: "维护保养",
+  livestream: "直播",
+  summit: "峰会",
+  digital_transformation: "数字化转型",
+  industry_exchange: "行业交流",
+  beijing: "北京",
+};
+
 const mockBanners = [
   {
     id: 1,
-    title: "春季新品促销",
-    position: "首页轮播",
+    title: "spring_promo",
+    position: "homepage",
     image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800",
     link: "/products/spring-sale",
     startDate: "2024-02-01",
@@ -71,8 +158,8 @@ const mockBanners = [
   },
   {
     id: 2,
-    title: "理光打印机新品发布",
-    position: "首页轮播",
+    title: "new_printer_launch",
+    position: "homepage",
     image: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=800",
     link: "/products/new-printers",
     startDate: "2024-02-10",
@@ -82,8 +169,8 @@ const mockBanners = [
   },
   {
     id: 3,
-    title: "企业解决方案",
-    position: "侧边栏",
+    title: "enterprise_solution",
+    position: "sidebar",
     image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400",
     link: "/solutions/enterprise",
     startDate: "2024-01-15",
@@ -93,8 +180,8 @@ const mockBanners = [
   },
   {
     id: 4,
-    title: "理光中国2024开年钜惠",
-    position: "开屏广告",
+    title: "new_year_offer_2024",
+    position: "splash",
     image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1080",
     link: "/promotions/new-year-2024",
     startDate: "2024-02-01",
@@ -111,39 +198,39 @@ const mockBanners = [
 const mockCases = [
   {
     id: 1,
-    title: "某大型制造企业数字化转型案例",
-    customer: "上海某某制造集团",
-    industry: "制造业",
-    solution: "智能文档管理系统",
+    title: "manufacturing_digital_transformation",
+    customer: "shanghai_manufacturing_group",
+    industry: "manufacturing",
+    solution: "intelligent_document_system",
     products: "RICOH IM C6000 × 20台",
     createTime: "2024-01-20",
     thumbnail: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400",
     status: "published",
-    tags: ["数字化转型", "智能制造", "文档管理", "大型企业"],
+    tags: ["digital_transformation", "intelligent_manufacturing", "document_management", "enterprise"],
   },
   {
     id: 2,
-    title: "金融行业高安全打印解决方案",
-    customer: "北京某某银行",
-    industry: "金融业",
-    solution: "安全打印解决方案",
+    title: "finance_secure_printing",
+    customer: "beijing_bank",
+    industry: "finance",
+    solution: "secure_printing_solution",
     products: "RICOH MP C5504exSP × 50台",
     createTime: "2024-01-18",
     thumbnail: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400",
     status: "published",
-    tags: ["金融", "安全打印", "信息安全", "银行"],
+    tags: ["finance", "secure_printing", "information_security", "banking"],
   },
   {
     id: 3,
-    title: "教育行业智慧校园建设",
-    customer: "广州某某大学",
-    industry: "教育",
-    solution: "智慧校园打印方案",
+    title: "education_smart_campus",
+    customer: "guangzhou_university",
+    industry: "education",
+    solution: "smart_campus_printing",
     products: "RICOH IM C3000 × 100台",
     createTime: "2024-01-15",
     thumbnail: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400",
     status: "published",
-    tags: ["教育", "智慧校园", "高校", "批量部署"],
+    tags: ["education", "smart_campus", "university", "large_scale_deployment"],
   },
 ];
 
@@ -151,42 +238,39 @@ const mockCases = [
 const mockActivities = [
   {
     id: 1,
-    title: "2024春季新品发布会",
-    type: "线下活动",
-    location: "上海国际会展中心",
+    title: "spring_new_product_launch_2024",
+    type: "offline",
+    location: "shanghai_expo_center",
     startDate: "2024-03-15",
     endDate: "2024-03-15",
     participants: 500,
-    budget: 200000,
     status: "upcoming",
     thumbnail: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400",
-    tags: ["新品发布", "线下活动", "2024", "上海"],
+    tags: ["new_product_launch", "offline_activity", "year_2024", "shanghai"],
   },
   {
     id: 2,
-    title: "打印机维护知识在线研讨会",
-    type: "线上活动",
-    location: "在线直播",
+    title: "online_printer_maintenance_workshop",
+    type: "online",
+    location: "live_streaming",
     startDate: "2024-02-25",
     endDate: "2024-02-25",
     participants: 1200,
-    budget: 50000,
     status: "ongoing",
     thumbnail: "https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=400",
-    tags: ["在线研讨会", "技术培训", "维护保养", "直播"],
+    tags: ["online_workshop", "technical_training", "maintenance", "livestream"],
   },
   {
     id: 3,
-    title: "企业数字化转型峰会",
-    type: "线下活动",
-    location: "北京国家会议中心",
+    title: "enterprise_digital_transformation_summit",
+    type: "offline",
+    location: "beijing_national_conference_center",
     startDate: "2024-01-20",
     endDate: "2024-01-21",
     participants: 800,
-    budget: 300000,
     status: "completed",
     thumbnail: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400",
-    tags: ["峰会", "数字化转型", "行业交流", "北京"],
+    tags: ["summit", "digital_transformation", "industry_exchange", "beijing"],
   },
 ];
 
@@ -232,7 +316,7 @@ const mockNotifications = [
   {
     id: 1,
     title: "系统维护通知",
-    content: "系统将于2024年2月20日 02:00-06:00进行维护升级",
+    content: "系统将于2024年2月20日02:00-06:00进行维护升级",
     type: "title",
     notificationType: "system",
     target: "all_users",
@@ -316,7 +400,7 @@ const mockUserGuides = [
     product: "全系列",
     category: "故障排除",
     difficulty: "中等",
-    content: "卡纸是打印机常见问题，按以下步骤可快速解决：\n\n排查步骤：\n1. 关闭打印机电源\n2. 打开所有可能卡纸的位置（进纸器、出纸槽、后盖板）\n3. 轻轻取出卡住的纸张（沿出纸方向拉）\n4. 检查是否有纸屑残留\n5. 合上所有盖板，重新开机\n\n预防措施：\n• 使用合格纸张（70-90g/m²）\n• 纸张不要装得太满\n• 保持纸张干燥\n• 定期清洁进纸滚轮",
+    content: "卡纸是打印机常见问题，可按以下步骤排查：\n\n1. 关闭打印机电源。\n2. 打开可能卡纸的位置（进纸器、出纸槽、后盖板）。\n3. 沿出纸方向轻轻拉出卡住纸张。\n4. 检查是否有纸屑残留。\n5. 合上盖板并重新开机。\n\n预防建议：\n- 使用合格纸张（70-90g/m²）。\n- 纸张不要装得过满。\n- 保持纸张干燥。\n- 定期清洁进纸滚轮。",
     views: 3850,
     likes: 198,
     helpful: 342,
@@ -328,11 +412,11 @@ const mockUserGuides = [
   },
   {
     id: 4,
-    title: "使用扫描到邮件功能提高效率",
+    title: "使用扫描到邮件功能",
     product: "RICOH IM C系列",
     category: "高级功能",
     difficulty: "中等",
-    content: "扫描到邮件功能让您可以直接将扫描文件发送到指定邮箱。\n\n配置步骤：\n1. 进入【设置】→【网络】→【邮件设置】\n2. 配置SMTP服务器信息\n3. 输入发送邮箱地址和密码\n4. 保存并测试连接\n\n使用方法：\n1. 将文件放在扫描台上\n2. 点击【扫描】→【扫描到邮件】\n3. 输入收件人地址\n4. 选择文件格式（PDF/JPG）\n5. 点击【发送】\n\n💡 提示：可设置常用联系人列表，提高操作效率。",
+    content: "扫描到邮件功能可将扫描文件直接发送到指定邮箱。\n\n配置步骤：\n1. 进入【设置】→【网络】→【邮件设置】。\n2. 配置 SMTP 服务器信息。\n3. 输入发件邮箱地址和密码。\n4. 保存并测试连接。\n\n使用方法：\n1. 将文件放在扫描台。\n2. 选择【扫描到邮件】。\n3. 输入收件人邮箱。\n4. 选择文件格式（PDF/JPG）。\n5. 点击【发送】。\n\n提示：可设置常用联系人列表，提高操作效率。",
     views: 1680,
     likes: 112,
     helpful: 178,
@@ -348,7 +432,7 @@ const mockUserGuides = [
     product: "RICOH MP系列",
     category: "安全功能",
     difficulty: "中等",
-    content: "安全打印功能可确保文档只有输入密码后才能打印。\n\n设置方法：\n1. 在打印对话框中选择【安全打印】\n2. 设置4位数PIN码\n3. 输入文档名称（可选）\n4. 点击【打印】\n\n打印文档：\n1. 到打印机前\n2. 在控制面板选择【安全打印】\n3. 输入您的用户名\n4. 输入PIN码\n5. 选择文档并打印\n\n🔒 适用场景：财务报表、合同文件、机密资料等。",
+    content: "安全打印可确保文档仅在输入密码后打印。\n\n设置方法：\n1. 在打印对话框选择【安全打印】。\n2. 设置 4 位 PIN 码。\n3. 输入文档名称（可选）。\n4. 点击【打印】。\n\n打印文档：\n1. 到打印机前打开【安全打印】。\n2. 输入用户名和 PIN 码。\n3. 选择文档并打印。\n\n适用场景：财务报表、合同文件、机密资料等。",
     views: 1290,
     likes: 78,
     helpful: 134,
@@ -363,8 +447,8 @@ const mockUserGuides = [
     title: "优化打印速度的5个技巧",
     product: "全系列",
     category: "性能优化",
-    difficulty: "简单",
-    content: "以下技巧可以显著提升打印速度：\n\n1. 使用草稿模式\n   • 适用于内部文档和草稿\n   • 可节省墨粉并加快速度\n\n2. 批量打印\n   • 合并多个小任务为一个大任务\n   • 减少预热时间\n\n3. 选择合适分辨率\n   • 文本文档：600dpi\n   • 图片文档：1200dpi\n\n4. 关闭不必要的功能\n   • 不需要时关闭双面打印\n   • 禁用页眉页脚\n\n5. 定期维护\n   • 清洁打印机\n   • 更新驱动程序\n\n⚡ 效果：最高可提升30%的打印速度。",
+    difficulty: "中等",
+    content: "以下技巧可显著提升打印速度：\n\n1. 使用草稿模式\n- 适用于内部文档。\n- 可节省墨粉并加快速度。\n\n2. 批量打印\n- 合并多个小任务，减少等待。\n\n3. 选择合适分辨率\n- 文本文档建议 300dpi。\n- 图片文档建议 600dpi。\n\n4. 关闭不必要功能\n- 不需要时关闭双面打印、页眉页脚等。\n\n5. 定期维护\n- 清洁打印机并更新驱动程序。\n\n效果：在高频场景下可明显提升打印效率。",
     views: 2150,
     likes: 167,
     helpful: 234,
@@ -398,7 +482,7 @@ const mockForms = [
     id: 2,
     name: "售后服务申请表",
     type: "service",
-    description: "用���收集客户售后服务需求",
+    description: "用于收集客户售后服务需求",
     fields: [
       { id: 1, label: "姓名", type: "text", required: true },
       { id: 2, label: "联系电话", type: "phone", required: true },
@@ -455,7 +539,7 @@ const mockForms = [
   },
 ];
 
-// 理光产品库
+// 理光产品数据
 const ricohProducts = [
   {
     id: 101,
@@ -469,7 +553,7 @@ const ricohProducts = [
     thumbnail: "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=400",
     productCode: "MP-C3004exSP",
     printSpeed: "30页/分钟",
-    features: "高速彩色打印、复印���扫描、传真一体机，支持移动打印和云服务",
+    features: "高速彩色打印、复印、扫描、传真一体机，支持移动打印和云服务",
     price: "面议",
   },
   {
@@ -676,6 +760,7 @@ export default function ContentManagement() {
   const [notifications, setNotifications] = useState(mockNotifications);
   const [forms, setForms] = useState(mockForms);
   const [products, setProducts] = useState(ricohProducts);
+  const [productTagsMap, setProductTagsMap] = useState<Record<number, string[]>>(productTagMap);
   const [productSearchTerm, setProductSearchTerm] = useState("");
   const [userGuides, setUserGuides] = useState(mockUserGuides);
   const [trainingCourses, setTrainingCourses] = useState(mockTrainingCourses);
@@ -684,6 +769,8 @@ export default function ContentManagement() {
   const [courseSearchTerm, setCourseSearchTerm] = useState("");
   const [certSearchTerm, setCertSearchTerm] = useState("");
   const [guideDialogOpen, setGuideDialogOpen] = useState(false);
+  const [courseDialogOpen, setCourseDialogOpen] = useState(false);
+  const [certDialogOpen, setCertDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("all");
   
@@ -702,6 +789,38 @@ export default function ContentManagement() {
   });
   const [tagInput, setTagInput] = useState("");
   const [currentTags, setCurrentTags] = useState<string[]>([]);
+  const [bannerTagInput, setBannerTagInput] = useState("");
+  const [bannerTags, setBannerTags] = useState<string[]>([]);
+  const [courseTagInput, setCourseTagInput] = useState("");
+  const [courseFormTags, setCourseFormTags] = useState<string[]>([]);
+  const [certTagInput, setCertTagInput] = useState("");
+  const [certFormTags, setCertFormTags] = useState<string[]>([]);
+  const [productEditDialogOpen, setProductEditDialogOpen] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<number | null>(null);
+  const [productEditTagInput, setProductEditTagInput] = useState("");
+  const [productEditTags, setProductEditTags] = useState<string[]>([]);
+  const [productEditForm, setProductEditForm] = useState({
+    title: "",
+    type: "",
+    category: "",
+    author: "",
+    status: "",
+    views: "",
+    createTime: "",
+    thumbnail: "",
+    productCode: "",
+    printSpeed: "",
+    features: "",
+    price: "",
+    visible: true,
+  });
+  const [mcqQuestions, setMcqQuestions] = useState<Array<{
+    id: number;
+    question: string;
+    options: string[];
+    answer: string;
+    score: number;
+  }>>([{ id: 1, question: "", options: ["", "", "", ""], answer: "A", score: 2 }]);
   
   // URL导入相关状态
   const [importUrl, setImportUrl] = useState("");
@@ -730,16 +849,27 @@ export default function ContentManagement() {
       return {
         ...product,
         thumbnail: printerImages[index] || printerImages[0],
-        visible: index < 3, // 前3个可见，第4个不可见
+        visible: index < 3, // 前3个可见，1个不可见
       };
     });
     setProducts(updatedProducts);
   }, []);
 
   const getBannerTags = (id: number) => bannerTagMap[id] || [];
+  const getBannerTitleZh = (title: string) => bannerTitleZhMap[title] || title;
+  const getBannerPositionZh = (position: string) => bannerPositionZhMap[position] || position;
+  const getCaseTitleZh = (value: string) => caseTitleZhMap[value] || value;
+  const getCaseCustomerZh = (value: string) => caseCustomerZhMap[value] || value;
+  const getCaseIndustryZh = (value: string) => caseIndustryZhMap[value] || value;
+  const getCaseSolutionZh = (value: string) => caseSolutionZhMap[value] || value;
+  const getCaseTagZh = (value: string) => caseTagZhMap[value] || value;
+  const getActivityTitleZh = (value: string) => activityTitleZhMap[value] || value;
+  const getActivityTypeZh = (value: string) => activityTypeZhMap[value] || value;
+  const getActivityLocationZh = (value: string) => activityLocationZhMap[value] || value;
+  const getActivityTagZh = (value: string) => activityTagZhMap[value] || value;
   const getNotificationTags = (id: number) => notificationTagMap[id] || [];
   const getFormTags = (id: number) => formTagMap[id] || [];
-  const getProductTags = (id: number) => productTagMap[id] || [];
+  const getProductTags = (id: number) => productTagsMap[id] || [];
   const getCourseTags = (id: number) => courseTagMap[id] || [];
   const getCertificationTags = (id: number) => certificationTagMap[id] || [];
 
@@ -866,6 +996,49 @@ export default function ContentManagement() {
     ));
   };
 
+  const handleOpenProductEdit = (product: ProductItem) => {
+    setEditingProductId(product.id);
+    setProductEditForm({
+      title: product.title || "",
+      type: product.type || "",
+      category: product.category || "",
+      author: product.author || "",
+      status: product.status || "",
+      views: String(product.views ?? 0),
+      createTime: product.createTime || "",
+      thumbnail: product.thumbnail || "",
+      productCode: product.productCode || "",
+      printSpeed: product.printSpeed || "",
+      features: product.features || "",
+      price: product.price || "",
+      visible: product.visible !== false,
+    });
+    setProductEditTags([...(getProductTags(product.id) || [])]);
+    setProductEditTagInput("");
+    setProductEditDialogOpen(true);
+  };
+
+  const handleSaveProductEdit = () => {
+    if (editingProductId === null) return;
+    setProducts((prev) =>
+      prev.map((product) =>
+        product.id === editingProductId
+          ? {
+              ...product,
+              ...productEditForm,
+              views: Number(productEditForm.views || 0),
+            }
+          : product,
+      ),
+    );
+    setProductTagsMap((prev) => ({
+      ...prev,
+      [editingProductId]: productEditTags,
+    }));
+    setProductEditDialogOpen(false);
+    setEditingProductId(null);
+  };
+
   // 模拟URL导入功能
   const handleImportFromUrl = async () => {
     if (!importUrl) return;
@@ -882,21 +1055,25 @@ export default function ContentManagement() {
     if (mainTab === "cases") {
       // 案例库模拟数据
       mockData = {
-        title: "数字化转型成功案例：某知名企业的智慧办公实践",
-        customer: "某知名科技公司",
+        title: "数字化办公转型案例：企业效率提升实践",
+        customer: "示例科技有限公司",
         industry: "科技",
-        solution: "全方位数字化办公解决方案",
-        content: "该企业通过部署理光智能打印解决方案，实现了文档管理数字化、打印流程自动化，大幅提升了办公效率。项目实施后，打印成本降低30%，文档处理效率提升50%，获得了客户的高度认可。\n\n项目背景：\n随着企业规模的快速扩张，传统的打印管理方式已无法满足业务需求。文档分散存储、打印流程繁琐、成本居高不下等问题日益凸显。\n\n解决方案：\n我们为客户提供了包括智能多功能打印机、文档管理系统、移动打印平台在内的一体化解决方案。\n\n实施效果：\n1. 打印成本降低30%\n2. 文档处理效率提升50%\n3. 纸张使用量减少40%\n4. 员工满意度显著提高",
-        summary: "通过部署理光智能打印解决方案，该企业实现了文档管理数字化，打印成本降低30%，效率提升50%。",
+        solution: "智能办公与文档管理一体化方案",
+        content:
+          "该企业上线智能打印与文档管理系统后，完成了打印流程标准化与自动化，减少重复操作，提升协同效率。项目实施后，打印成本显著下降，文档流转效率明显提升。",
+        summary:
+          "通过规范化办公流程显著提升效率并降低打印成本。",
       };
     } else if (mainTab === "news") {
       // 新闻内容模拟数据
       mockData = {
-        title: "办公数字化转型趋势：智能打印引领未来办公新模式",
+        title: "数字化办公趋势：智能打印驱动组织升级",
         author: "行业观察员",
         category: "行业动态",
-        content: "随着数字化转型的深入推进，企业办公方式正在发生深刻变革。智能打印技术作为数字化办公的重要组成部分，正在重新定义现代办公模式。\n\n一、数字化办公的新趋势\n\n近年来，云计算、人工智能、物联网等新兴技术的快速发展，为办公数字化转型提供了强大的技术支撑。企业不再满足于简单的电子化，而是追求智能化、自动化的办公体验。\n\n二、智能打印的核心价值\n\n1. 提高效率：自动化打印流程，减少人工干预\n2. 降低成本：精准控制打印行为，优化资源配置\n3. 增强安全：多层次权限管理，保护敏感信息\n4. 支持移动：随时随地打印，满足灵活办公需求\n\n三、行业应用案例\n\n在金融、教育、医疗等行业，智能打印解决方案已经得到广泛应用。某银行通过部署智能打印系统，实现了打印行为全程可追溯，有效防范了信息泄露风险。\n\n四、未来展望\n\n随着技术的不断进步，智能打印将与更多办公场景深度融合，成为企业数字化转型的重要助力。",
-        summary: "智能打印技术正在引领办公数字化转型新趋势，通过提高效率、降低成本、增强安全等方式，重新定义现代办公模式。",
+        content:
+          "随着数字化进程加速，企业办公场景正在从基础电子化走向智能化。智能打印作为关键环节，正在与权限控制、流程审批和移动办公能力深度结合，帮助组织提升效率并强化信息安全。",
+        summary:
+          "智能打印与数字化流程融合，正在成为企业提升效率、降低成本和增强安全能力的重要抓手。",
       };
     }
 
@@ -936,7 +1113,7 @@ export default function ContentManagement() {
       <Card>
         <CardHeader>
           <CardTitle>内容管理</CardTitle>
-          <p className="text-sm text-gray-600">管理网站和移动端的各类内容、活动和推送</p>
+          <p className="text-sm text-gray-600">管理网站与移动端的各类内容、活动和推广信息</p>
         </CardHeader>
         <CardContent>
           <Tabs value={mainTab} onValueChange={setMainTab} className="space-y-6">
@@ -975,11 +1152,11 @@ export default function ContentManagement() {
               </TabsTrigger>
               <TabsTrigger value="courses" className="flex items-center gap-2">
                 <Zap className="h-4 w-4" />
-                培训课程
+                经销商学院
               </TabsTrigger>
               <TabsTrigger value="certifications" className="flex items-center gap-2">
                 <HelpCircle className="h-4 w-4" />
-                考试认证
+                技术认证
               </TabsTrigger>
             </TabsList>
 
@@ -1009,9 +1186,7 @@ export default function ContentManagement() {
                         <Badge
                           key={tag}
                           variant={isSelected ? "default" : "outline"}
-                          className={`cursor-pointer transition-all ${
-                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
-                          }`}
+                          className={isSelected ? "cursor-pointer transition-all bg-blue-600" : "cursor-pointer transition-all hover:bg-blue-50"}
                           onClick={() => {
                             const currentSelected = selectedTags.banners || [];
                             setSelectedTags({
@@ -1022,7 +1197,7 @@ export default function ContentManagement() {
                             });
                           }}
                         >
-                          {tag}
+                          {getCaseTagZh(tag)}
                           {isSelected && <X className="h-3 w-3 ml-1" />}
                         </Badge>
                       );
@@ -1062,12 +1237,12 @@ export default function ContentManagement() {
                         <TableCell>
                           <img 
                             src={banner.image} 
-                            alt={banner.title}
+                            alt={getBannerTitleZh(banner.title)}
                             className="w-24 h-12 object-cover rounded"
                           />
                         </TableCell>
                         <TableCell className="font-medium">
-                          <div>{banner.title}</div>
+                          <div>{getBannerTitleZh(banner.title)}</div>
                           {getBannerTags(banner.id).length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1">
                               {getBannerTags(banner.id).slice(0, 2).map((tag: string) => (
@@ -1079,16 +1254,16 @@ export default function ContentManagement() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={banner.position === "开屏广告" ? "default" : "outline"}>
-                            {banner.position}
+                          <Badge variant={banner.position === "splash" ? "default" : "outline"}>
+                            {getBannerPositionZh(banner.position)}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {banner.position === "开屏广告" ? (
+                          {banner.position === "splash" ? (
                             <div className="text-xs text-gray-600 space-y-1">
-                              <div>⏱️ {banner.duration}秒</div>
+                              <div>时长: {banner.duration}秒</div>
                               <div>{banner.skippable ? "✅ 可跳过" : "❌ 不可跳过"}</div>
-                              <div>📊 每天{banner.frequency}次</div>
+                              <div>频次: 每天{banner.frequency}次</div>
                             </div>
                           ) : (
                             <span className="text-sm text-gray-400">-</span>
@@ -1151,9 +1326,7 @@ export default function ContentManagement() {
                         <Badge
                           key={tag}
                           variant={isSelected ? "default" : "outline"}
-                          className={`cursor-pointer transition-all ${
-                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
-                          }`}
+                          className={isSelected ? "cursor-pointer transition-all bg-blue-600" : "cursor-pointer transition-all hover:bg-blue-50"}
                           onClick={() => {
                             const currentSelected = selectedTags.cases || [];
                             setSelectedTags({
@@ -1164,7 +1337,7 @@ export default function ContentManagement() {
                             });
                           }}
                         >
-                          {tag}
+                          {getCaseTagZh(tag)}
                           {isSelected && <X className="h-3 w-3 ml-1" />}
                         </Badge>
                       );
@@ -1194,20 +1367,20 @@ export default function ContentManagement() {
                     <div className="aspect-video bg-gray-100 relative">
                       <img
                         src={caseItem.thumbnail}
-                        alt={caseItem.title}
+                        alt={getCaseTitleZh(caseItem.title)}
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute top-2 right-2">
-                        <Badge>{caseItem.industry}</Badge>
+                        <Badge>{getCaseIndustryZh(caseItem.industry)}</Badge>
                       </div>
                     </div>
                     <CardContent className="p-4 space-y-3">
                       <div>
-                        <h3 className="font-semibold mb-2">{caseItem.title}</h3>
+                        <h3 className="font-semibold mb-2">{getCaseTitleZh(caseItem.title)}</h3>
                         <div className="space-y-1 text-sm text-gray-600">
-                          <p><span className="font-medium">客户：</span>{caseItem.customer}</p>
-                          <p><span className="font-medium">方案：</span>{caseItem.solution}</p>
-                          <p><span className="font-medium">产品：</span>{caseItem.products}</p>
+                          <p><span className="font-medium">客户</span>{getCaseCustomerZh(caseItem.customer)}</p>
+                          <p><span className="font-medium">方案</span>{getCaseSolutionZh(caseItem.solution)}</p>
+                          <p><span className="font-medium">产品</span>{caseItem.products}</p>
                         </div>
                       </div>
 
@@ -1216,7 +1389,7 @@ export default function ContentManagement() {
                         <div className="flex flex-wrap gap-1 pt-2 border-t">
                           {caseItem.tags.map((tag: string) => (
                             <Badge key={tag} variant="secondary" className="text-xs">
-                              {tag}
+                              {getCaseTagZh(tag)}
                             </Badge>
                           ))}
                         </div>
@@ -1276,9 +1449,7 @@ export default function ContentManagement() {
                         <Badge
                           key={tag}
                           variant={isSelected ? "default" : "outline"}
-                          className={`cursor-pointer transition-all ${
-                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
-                          }`}
+                          className={isSelected ? "cursor-pointer transition-all bg-blue-600" : "cursor-pointer transition-all hover:bg-blue-50"}
                           onClick={() => {
                             const currentSelected = selectedTags.activities || [];
                             setSelectedTags({
@@ -1289,7 +1460,7 @@ export default function ContentManagement() {
                             });
                           }}
                         >
-                          {tag}
+                          {getActivityTagZh(tag)}
                           {isSelected && <X className="h-3 w-3 ml-1" />}
                         </Badge>
                       );
@@ -1319,7 +1490,7 @@ export default function ContentManagement() {
                     <div className="aspect-video bg-gray-100 relative">
                       <img
                         src={activity.thumbnail}
-                        alt={activity.title}
+                        alt={getActivityTitleZh(activity.title)}
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute top-2 right-2">
@@ -1330,18 +1501,17 @@ export default function ContentManagement() {
                     </div>
                     <CardContent className="p-4 space-y-3">
                       <div>
-                        <h3 className="font-semibold mb-2">{activity.title}</h3>
+                        <h3 className="font-semibold mb-2">{getActivityTitleZh(activity.title)}</h3>
                         <div className="space-y-1 text-sm text-gray-600">
                           <p className="flex items-center gap-2">
-                            <Badge variant="outline">{activity.type}</Badge>
+                            <Badge variant="outline">{getActivityTypeZh(activity.type)}</Badge>
                           </p>
                           <p className="flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
-                            {activity.location}
+                            {getActivityLocationZh(activity.location)}
                           </p>
-                          <p><span className="font-medium">时间：</span>{activity.startDate}</p>
-                          <p><span className="font-medium">参与人数：</span>{activity.participants}人</p>
-                          <p><span className="font-medium">预算：</span>¥{activity.budget.toLocaleString()}</p>
+                          <p><span className="font-medium">时间</span>{activity.startDate}</p>
+                          <p><span className="font-medium">参与人数</span>{activity.participants}人</p>
                         </div>
                       </div>
 
@@ -1350,7 +1520,7 @@ export default function ContentManagement() {
                         <div className="flex flex-wrap gap-1 pt-2 border-t">
                           {activity.tags.map((tag: string) => (
                             <Badge key={tag} variant="secondary" className="text-xs">
-                              {tag}
+                              {getActivityTagZh(tag)}
                             </Badge>
                           ))}
                         </div>
@@ -1403,9 +1573,7 @@ export default function ContentManagement() {
                         <Badge
                           key={tag}
                           variant={isSelected ? "default" : "outline"}
-                          className={`cursor-pointer transition-all ${
-                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
-                          }`}
+                          className={isSelected ? "cursor-pointer transition-all bg-blue-600" : "cursor-pointer transition-all hover:bg-blue-50"}
                           onClick={() => {
                             const currentSelected = selectedTags.news || [];
                             setSelectedTags({
@@ -1530,9 +1698,7 @@ export default function ContentManagement() {
                         <Badge
                           key={tag}
                           variant={isSelected ? "default" : "outline"}
-                          className={`cursor-pointer transition-all ${
-                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
-                          }`}
+                          className={isSelected ? "cursor-pointer transition-all bg-blue-600" : "cursor-pointer transition-all hover:bg-blue-50"}
                           onClick={() => {
                             const currentSelected = selectedTags.notifications || [];
                             setSelectedTags({
@@ -1572,9 +1738,9 @@ export default function ContentManagement() {
                       <TableHead>类型</TableHead>
                       <TableHead>目标用户</TableHead>
                       <TableHead>发送时间</TableHead>
-                      <TableHead>阅读率</TableHead>
+                      <TableHead>阅读数</TableHead>
                       <TableHead>状态</TableHead>
-                      <TableHead className="text-center">���作</TableHead>
+                      <TableHead className="text-center">操作</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1614,8 +1780,11 @@ export default function ContentManagement() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {notification.target === 'all_users' ? '全部用户' : 
-                           notification.target === 'dealers' ? '经销商' : '客户'}
+                            {notification.target === "all_users"
+                              ? "全部用户"
+                              : notification.target === "dealers"
+                                ? "经销商"
+                                : "客户"}
                         </TableCell>
                         <TableCell className="text-sm">
                           {notification.sendTime || '-'}
@@ -1683,9 +1852,7 @@ export default function ContentManagement() {
                         <Badge
                           key={tag}
                           variant={isSelected ? "default" : "outline"}
-                          className={`cursor-pointer transition-all ${
-                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
-                          }`}
+                          className={isSelected ? "cursor-pointer transition-all bg-blue-600" : "cursor-pointer transition-all hover:bg-blue-50"}
                           onClick={() => {
                             const currentSelected = selectedTags.forms || [];
                             setSelectedTags({
@@ -1759,7 +1926,7 @@ export default function ContentManagement() {
 
                       {/* 字段列表预览 */}
                       <div className="pt-2 border-t">
-                        <p className="text-xs font-medium text-gray-700 mb-2">表单字段：</p>
+                        <p className="text-xs font-medium text-gray-700 mb-2">表单字段</p>
                         <div className="flex flex-wrap gap-1">
                           {form.fields.slice(0, 4).map((field) => (
                             <Badge key={field.id} variant="outline" className="text-xs">
@@ -1812,7 +1979,7 @@ export default function ContentManagement() {
             {/* 产品库 */}
             <TabsContent value="products" className="space-y-4">
               <div>
-                <h3 className="text-lg font-semibold">理光彩色多功能打印机产品库</h3>
+                <h3 className="text-lg font-semibold">理光彩色多功能打印机产品</h3>
                 <p className="text-sm text-gray-600 mt-1">来源：https://www.ricoh.com.cn/products/multifunction-printer-colour</p>
               </div>
 
@@ -1835,20 +2002,22 @@ export default function ContentManagement() {
                   <div className="flex flex-wrap gap-2">
                     {Array.from(new Set(products.flatMap((p) => getProductTags(p.id)))).map((tag: string) => {
                       const isSelected = selectedTags.products?.includes(tag);
+                      const badgeClass = isSelected
+                        ? "cursor-pointer transition-all bg-blue-600"
+                        : "cursor-pointer transition-all hover:bg-blue-50";
+
                       return (
                         <Badge
                           key={tag}
                           variant={isSelected ? "default" : "outline"}
-                          className={`cursor-pointer transition-all ${
-                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
-                          }`}
+                          className={badgeClass}
                           onClick={() => {
                             const currentSelected = selectedTags.products || [];
                             setSelectedTags({
                               ...selectedTags,
                               products: isSelected
                                 ? currentSelected.filter((t: string) => t !== tag)
-                                : [...currentSelected, tag]
+                                : [...currentSelected, tag],
                             });
                           }}
                         >
@@ -1908,6 +2077,13 @@ export default function ContentManagement() {
                           <span className="text-gray-600">{product.views}</span>
                         </div>
                         <span className="font-medium text-blue-600">{product.price}</span>
+                      </div>
+
+                      <div className="pt-2 border-t">
+                        <Button variant="outline" size="sm" className="w-full" onClick={() => handleOpenProductEdit(product)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          编辑产品
+                        </Button>
                       </div>
 
                       {/* 可见性管理 */}
@@ -1973,7 +2149,7 @@ export default function ContentManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">全部难度</SelectItem>
-                    <SelectItem value="简单">简单</SelectItem>
+                    <SelectItem value="simple">简单</SelectItem>
                     <SelectItem value="中等">中等</SelectItem>
                     <SelectItem value="困难">困难</SelectItem>
                   </SelectContent>
@@ -1994,9 +2170,7 @@ export default function ContentManagement() {
                         <Badge
                           key={tag}
                           variant={isSelected ? "default" : "outline"}
-                          className={`cursor-pointer transition-all ${
-                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
-                          }`}
+                          className={isSelected ? "cursor-pointer transition-all bg-blue-600" : "cursor-pointer transition-all hover:bg-blue-50"}
                           onClick={() => {
                             const currentSelected = selectedTags.guides || [];
                             setSelectedTags({
@@ -2069,7 +2243,7 @@ export default function ContentManagement() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600">有帮助</p>
+                        <p className="text-sm text-gray-600">有帮</p>
                         <p className="text-2xl font-bold text-purple-600">
                           {userGuides.reduce((sum, g) => sum + g.helpful, 0)}
                         </p>
@@ -2149,7 +2323,7 @@ export default function ContentManagement() {
 
                       {/* 更新时间 */}
                       <div className="text-xs text-gray-500 pt-2 border-t">
-                        更新于 {guide.updateTime}
+                        更新于：{guide.updateTime}
                       </div>
 
                       {/* 操作按钮 */}
@@ -2197,10 +2371,10 @@ export default function ContentManagement() {
             <TabsContent value="courses" className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold">培训课程管理</h3>
-                  <p className="text-sm text-gray-600">管理培训课程、课时和讲师信息</p>
+                  <h3 className="text-lg font-semibold">经销商学院管理</h3>
+                  <p className="text-sm text-gray-600">管理经销商学院课程课时和讲师信息</p>
                 </div>
-                <Button>
+                <Button onClick={() => setCourseDialogOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   新增课程
                 </Button>
@@ -2229,9 +2403,7 @@ export default function ContentManagement() {
                         <Badge
                           key={tag}
                           variant={isSelected ? "default" : "outline"}
-                          className={`cursor-pointer transition-all ${
-                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
-                          }`}
+                          className={isSelected ? "cursor-pointer transition-all bg-blue-600" : "cursor-pointer transition-all hover:bg-blue-50"}
                           onClick={() => {
                             const currentSelected = selectedTags.courses || [];
                             setSelectedTags({
@@ -2271,7 +2443,7 @@ export default function ContentManagement() {
                       <TableHead>课时</TableHead>
                       <TableHead>讲师</TableHead>
                       <TableHead>报名人数</TableHead>
-                      <TableHead>通过率</TableHead>
+                      <TableHead>通过</TableHead>
                       <TableHead>状态</TableHead>
                       <TableHead className="text-right">操作</TableHead>
                     </TableRow>
@@ -2329,10 +2501,10 @@ export default function ContentManagement() {
             <TabsContent value="certifications" className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold">考试认证管理</h3>
-                  <p className="text-sm text-gray-600">管理认证考试、及格线和考试规则</p>
+                  <h3 className="text-lg font-semibold">技术认证管理</h3>
+                  <p className="text-sm text-gray-600">管理技术认证考试、总分、及格线和考试规则</p>
                 </div>
-                <Button>
+                <Button onClick={() => setCertDialogOpen(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   新增认证
                 </Button>
@@ -2361,9 +2533,7 @@ export default function ContentManagement() {
                         <Badge
                           key={tag}
                           variant={isSelected ? "default" : "outline"}
-                          className={`cursor-pointer transition-all ${
-                            isSelected ? "bg-blue-600" : "hover:bg-blue-50"
-                          }`}
+                          className={isSelected ? "cursor-pointer transition-all bg-blue-600" : "cursor-pointer transition-all hover:bg-blue-50"}
                           onClick={() => {
                             const currentSelected = selectedTags.certifications || [];
                             setSelectedTags({
@@ -2401,10 +2571,10 @@ export default function ContentManagement() {
                       <TableHead>考试编码</TableHead>
                       <TableHead>关联课程</TableHead>
                       <TableHead>题量</TableHead>
-                      <TableHead>及格线</TableHead>
+                      <TableHead>及格</TableHead>
                       <TableHead>时长</TableHead>
                       <TableHead>参考人数</TableHead>
-                      <TableHead>通过率</TableHead>
+                      <TableHead>通过</TableHead>
                       <TableHead>状态</TableHead>
                       <TableHead className="text-right">操作</TableHead>
                     </TableRow>
@@ -2478,14 +2648,20 @@ export default function ContentManagement() {
                 <div className="grid grid-cols-3 gap-4">
                   <div
                     onClick={() => setNotificationType("title")}
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 ${
-                      notificationType === "title" ? "border-blue-600 bg-blue-50" : "border-gray-200"
-                    }`}
+                    className={
+                      notificationType === "title"
+                        ? "p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 border-blue-600 bg-blue-50"
+                        : "p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 border-gray-200"
+                    }
                   >
                     <div className="text-center space-y-2">
-                      <Bell className={`h-8 w-8 mx-auto ${
-                        notificationType === "title" ? "text-blue-600" : "text-gray-400"
-                      }`} />
+                      <Bell
+                        className={
+                          notificationType === "title"
+                            ? "h-8 w-8 mx-auto text-blue-600"
+                            : "h-8 w-8 mx-auto text-gray-400"
+                        }
+                      />
                       <div>
                         <p className="font-medium">标题通知</p>
                         <p className="text-xs text-gray-500 mt-1">简短标题+副标题</p>
@@ -2494,14 +2670,20 @@ export default function ContentManagement() {
                   </div>
                   <div
                     onClick={() => setNotificationType("content")}
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 ${
-                      notificationType === "content" ? "border-blue-600 bg-blue-50" : "border-gray-200"
-                    }`}
+                    className={
+                      notificationType === "content"
+                        ? "p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 border-blue-600 bg-blue-50"
+                        : "p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 border-gray-200"
+                    }
                   >
                     <div className="text-center space-y-2">
-                      <Newspaper className={`h-8 w-8 mx-auto ${
-                        notificationType === "content" ? "text-blue-600" : "text-gray-400"
-                      }`} />
+                      <Newspaper
+                        className={
+                          notificationType === "content"
+                            ? "h-8 w-8 mx-auto text-blue-600"
+                            : "h-8 w-8 mx-auto text-gray-400"
+                        }
+                      />
                       <div>
                         <p className="font-medium">内容通知</p>
                         <p className="text-xs text-gray-500 mt-1">标题+详细内容</p>
@@ -2510,14 +2692,20 @@ export default function ContentManagement() {
                   </div>
                   <div
                     onClick={() => setNotificationType("image")}
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 ${
-                      notificationType === "image" ? "border-blue-600 bg-blue-50" : "border-gray-200"
-                    }`}
+                    className={
+                      notificationType === "image"
+                        ? "p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 border-blue-600 bg-blue-50"
+                        : "p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 border-gray-200"
+                    }
                   >
                     <div className="text-center space-y-2">
-                      <ImageIcon className={`h-8 w-8 mx-auto ${
-                        notificationType === "image" ? "text-blue-600" : "text-gray-400"
-                      }`} />
+                      <ImageIcon
+                        className={
+                          notificationType === "image"
+                            ? "h-8 w-8 mx-auto text-blue-600"
+                            : "h-8 w-8 mx-auto text-gray-400"
+                        }
+                      />
                       <div>
                         <p className="font-medium">图片通知</p>
                         <p className="text-xs text-gray-500 mt-1">标题+内容+图片</p>
@@ -2568,7 +2756,7 @@ export default function ContentManagement() {
                   <div className="flex gap-2">
                     <Input
                       id="notification-image"
-                      placeholder="请输入图片URL或上传图片"
+                      placeholder="请输入图片 URL 或上传图片"
                       className="flex-1"
                       required
                     />
@@ -2591,7 +2779,7 @@ export default function ContentManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="system">系统通知</SelectItem>
-                      <SelectItem value="marketing">营销推送</SelectItem>
+                      <SelectItem value="marketing">营销推</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -2646,18 +2834,18 @@ export default function ContentManagement() {
                           defaultValue=""
                         />
                         <p className="text-xs text-gray-500">
-                          用户点击通知后将跳转到此页面查看详细内容
+                          启用后，通知可跳转页面查看详情
                         </p>
                       </div>
                       <Link2 className="h-5 w-5 text-gray-400 mt-2" />
                     </div>
                     <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm">
-                      <p className="font-medium text-blue-900 mb-1">链接示例：</p>
+                      <p className="font-medium text-blue-900 mb-1">链接示例</p>
                       <ul className="text-blue-700 space-y-1 text-xs">
-                        <li>• 产品详情：/products/ricoh-im-c6000</li>
-                        <li>• 活动页面：/activities/spring-sale-2024</li>
-                        <li>• 新闻详情：/news/company-announcement</li>
-                        <li>• 外部链接：https://www.ricoh.com.cn</li>
+                          <li>• 产品详情：`/products/ricoh-im-c6000`</li>
+                          <li>• 活动页面：`/activities/spring-sale-2024`</li>
+                          <li>• 新闻详情：`/news/company-announcement`</li>
+                          <li>• 外部链接：`https://www.ricoh.com.cn`</li>
                       </ul>
                     </div>
                   </>
@@ -2695,7 +2883,7 @@ export default function ContentManagement() {
             </DialogTitle>
             <DialogDescription>
               {mainTab === "cases" 
-                ? "填写客户案例信息，或从外部URL一键导入" 
+                ? "填写客户案例信息，或从外部URL一键导入"
                 : mainTab === "news"
                 ? "填写新闻内容，或从外部URL一键导入"
                 : "填写内容信息"}
@@ -2716,7 +2904,7 @@ export default function ContentManagement() {
                     <h4 className="font-semibold">一键导入</h4>
                   </div>
                   <p className="text-sm text-blue-700">
-                    输入新闻或博客文章的URL，系统将自动抓取内容并填充到表单中
+                    输入新闻或博客文章的URL，系统将自动抓取内容并填充到表单。
                   </p>
                   
                   <div className="flex gap-2">
@@ -2759,9 +2947,9 @@ export default function ContentManagement() {
                   )}
 
                   <div className="text-xs text-blue-600 space-y-1">
-                    <p className="font-medium">💡 功能说明：</p>
+                    <p className="font-medium">💡 功能说明</p>
                     <ul className="space-y-0.5 ml-4">
-                      <li>• 目前为演示模式，实际使用需要后端API支持</li>
+                      <li>• 目前为演示模式，实际使用需要后端 API 支持</li>
                       <li>• 支持导入第三方新闻网站、博客文章等</li>
                       <li>• 导入后可以编辑和调整内容</li>
                     </ul>
@@ -2787,7 +2975,7 @@ export default function ContentManagement() {
                       <Label htmlFor="case-customer">客户名称 *</Label>
                       <Input
                         id="case-customer"
-                        placeholder="例如：上海某某制造集团"
+                        placeholder="请输入客户名称"
                         value={formData.customer}
                         onChange={(e) => setFormData({...formData, customer: e.target.value})}
                         required
@@ -2807,7 +2995,7 @@ export default function ContentManagement() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="制造业">制造业</SelectItem>
-                          <SelectItem value="金融业">金融业</SelectItem>
+                          <SelectItem value="金融">金融</SelectItem>
                           <SelectItem value="教育">教育</SelectItem>
                           <SelectItem value="医疗">医疗</SelectItem>
                           <SelectItem value="科技">科技</SelectItem>
@@ -2833,7 +3021,7 @@ export default function ContentManagement() {
                     <Label htmlFor="case-summary">案例摘要 *</Label>
                     <Textarea
                       id="case-summary"
-                      placeholder="请输入案例简介（100-200字）"
+                        placeholder="请输入案例简介（100-200字）"
                       rows={3}
                       value={formData.summary}
                       onChange={(e) => setFormData({...formData, summary: e.target.value})}
@@ -2845,7 +3033,7 @@ export default function ContentManagement() {
                     <Label htmlFor="case-content">案例详情 *</Label>
                     <Textarea
                       id="case-content"
-                      placeholder="请输入案例的详细内容，包括项目背景、解决方案、实施效果等"
+                      placeholder="请输入案例的详细内容，包括项目背景解决方案实施效果等"
                       rows={12}
                       value={formData.content}
                       onChange={(e) => setFormData({...formData, content: e.target.value})}
@@ -2853,7 +3041,7 @@ export default function ContentManagement() {
                       className="font-mono text-sm"
                     />
                     <p className="text-xs text-gray-500">
-                      支持换行和段落格式，建议包含：项目背景、解决方案、实施过程、实施效果等内容
+                      支持换行和段落格式，建议包含：项目背景解决方案实施过程实施效果等内容
                     </p>
                   </div>
 
@@ -2905,7 +3093,7 @@ export default function ContentManagement() {
                         </div>
                       )}
                       <p className="text-xs text-gray-500">
-                        添加标签以便快速分类和检索，如：数字化转型、智能制造、大型企业等
+                        例如：数字化转型、智能制造、文档管理
                       </p>
                     </div>
                   </div>
@@ -2996,7 +3184,7 @@ export default function ContentManagement() {
                       className="font-mono text-sm"
                     />
                     <p className="text-xs text-gray-500">
-                      支持富文本格式，建议使用标题、段落、列表等结构化内容
+                      支持富文本格式，建议使用标题、段落列表等结构化内容
                     </p>
                   </div>
 
@@ -3106,14 +3294,16 @@ export default function ContentManagement() {
       <Dialog open={bannerDialogOpen} onOpenChange={(open) => {
         setBannerDialogOpen(open);
         if (open) {
-          setBannerPosition("homepage"); // 重置为默认值
+          setBannerPosition("homepage"); // 重置为默认位置
+          setBannerTagInput("");
+          setBannerTags([]);
         }
       }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>添加广告位</DialogTitle>
+            <DialogTitle>添加广告</DialogTitle>
             <DialogDescription>
-              配置广告横幅的显示位置、时间和跳转链接
+              配置广告横幅的显示位置时间和跳转链接
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); setBannerDialogOpen(false); }}>
@@ -3122,7 +3312,7 @@ export default function ContentManagement() {
                 <Label htmlFor="banner-title">广告标题 *</Label>
                 <Input
                   id="banner-title"
-                  placeholder="请输入广告标题，如：春季新品促销"
+                  placeholder="请输入广告标题"
                   required
                 />
               </div>
@@ -3193,7 +3383,7 @@ export default function ContentManagement() {
                         允许用户跳过
                       </Label>
                       <p className="text-xs text-gray-600">
-                        开启后用户可点击"跳过"按钮关闭广告
+                        开启后用户可点击“跳过”按钮关闭广告
                       </p>
                     </div>
                     <Switch
@@ -3227,7 +3417,7 @@ export default function ContentManagement() {
                 <p className="text-xs text-gray-500">
                   {bannerPosition === "splash" 
                     ? "开屏广告推荐尺寸：1080x1920px（竖屏全屏）"
-                    : "首页轮播推荐尺寸���1920x600px，侧边栏推荐尺寸：400x300px"
+                    : "首页轮播推荐尺寸：1920x600px，侧边栏推荐尺寸：400x300px"
                   }
                 </p>
               </div>
@@ -3241,6 +3431,57 @@ export default function ContentManagement() {
                 <p className="text-xs text-gray-500">
                   留空表示不跳转，仅作展示
                 </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="banner-tags">标签</Label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      id="banner-tags"
+                      placeholder="输入标签后按回车添加"
+                      value={bannerTagInput}
+                      onChange={(e) => setBannerTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const nextTag = bannerTagInput.trim();
+                          if (nextTag && !bannerTags.includes(nextTag)) {
+                            setBannerTags([...bannerTags, nextTag]);
+                            setBannerTagInput("");
+                          }
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const nextTag = bannerTagInput.trim();
+                        if (nextTag && !bannerTags.includes(nextTag)) {
+                          setBannerTags([...bannerTags, nextTag]);
+                          setBannerTagInput("");
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      添加
+                    </Button>
+                  </div>
+                  {bannerTags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border">
+                      {bannerTags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-sm">
+                          {tag}
+                          <X
+                            className="h-3 w-3 ml-1 cursor-pointer hover:text-red-600"
+                            onClick={() => setBannerTags(bannerTags.filter((t) => t !== tag))}
+                          />
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -3300,6 +3541,367 @@ export default function ContentManagement() {
         </DialogContent>
       </Dialog>
 
+      <Dialog
+        open={courseDialogOpen}
+        onOpenChange={(open) => {
+          setCourseDialogOpen(open);
+          if (!open) {
+            setCourseTagInput("");
+            setCourseFormTags([]);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>新增课程</DialogTitle>
+            <DialogDescription>创建经销商学院课程并设置课程标签</DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setCourseDialogOpen(false);
+              setCourseTagInput("");
+              setCourseFormTags([]);
+            }}
+          >
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="course-title">课程名称 *</Label>
+                <Input id="course-title" placeholder="请输入课程名称" required />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="course-category">课程分类 *</Label>
+                  <Input id="course-category" placeholder="如：产品知识" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="course-level">课程级别 *</Label>
+                  <Input id="course-level" placeholder="如：初级/中级/高级" required />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="course-duration">课时（小时） *</Label>
+                  <Input id="course-duration" type="number" min="1" placeholder="如：6" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="course-instructor">讲师 *</Label>
+                  <Input id="course-instructor" placeholder="请输入讲师姓名" required />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="course-video-url">课程视频</Label>
+                <div className="flex gap-2">
+                  <Input id="course-video-url" placeholder="请填写视频链接，如：https://..." className="flex-1" />
+                  <Button type="button" variant="outline">
+                    <ImageIcon className="h-4 w-4 mr-2" />
+                    上传视频
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500">支持上传视频文件，或直接填写视频链接</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="course-form-tags">课程标签</Label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      id="course-form-tags"
+                      placeholder="输入课程标签后按回车添加"
+                      value={courseTagInput}
+                      onChange={(e) => setCourseTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const nextTag = courseTagInput.trim();
+                          if (nextTag && !courseFormTags.includes(nextTag)) {
+                            setCourseFormTags([...courseFormTags, nextTag]);
+                            setCourseTagInput("");
+                          }
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const nextTag = courseTagInput.trim();
+                        if (nextTag && !courseFormTags.includes(nextTag)) {
+                          setCourseFormTags([...courseFormTags, nextTag]);
+                          setCourseTagInput("");
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      添加
+                    </Button>
+                  </div>
+                  {courseFormTags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border">
+                      {courseFormTags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-sm">
+                          {tag}
+                          <X
+                            className="h-3 w-3 ml-1 cursor-pointer hover:text-red-600"
+                            onClick={() => setCourseFormTags(courseFormTags.filter((t) => t !== tag))}
+                          />
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCourseDialogOpen(false)}>
+                取消
+              </Button>
+              <Button type="submit">创建课程</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={certDialogOpen}
+        onOpenChange={(open) => {
+          setCertDialogOpen(open);
+          if (!open) {
+            setCertTagInput("");
+            setCertFormTags([]);
+            setMcqQuestions([{ id: 1, question: "", options: ["", "", "", ""], answer: "A", score: 2 }]);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>新增认证</DialogTitle>
+            <DialogDescription>创建技术认证并设置课程标签</DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setCertDialogOpen(false);
+              setCertTagInput("");
+              setCertFormTags([]);
+              setMcqQuestions([{ id: 1, question: "", options: ["", "", "", ""], answer: "A", score: 2 }]);
+            }}
+          >
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="cert-name">认证名称 *</Label>
+                <Input id="cert-name" placeholder="请输入认证名称" required />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="cert-code">考试编码 *</Label>
+                   <Input id="cert-code" placeholder="如：TC-1001" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cert-course">关联课程 *</Label>
+                  <Input id="cert-course" placeholder="请输入关联课程" required />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="cert-pass-score">及格线 *</Label>
+                  <Input id="cert-pass-score" type="number" min="1" max="100" placeholder="如：80" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cert-total-score">总分 *</Label>
+                  <Input id="cert-total-score" type="number" min="1" placeholder="如：100" required />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="cert-duration">考试时长（分钟） *</Label>
+                  <Input id="cert-duration" type="number" min="1" placeholder="如：90" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cert-question-count">题量</Label>
+                  <Input id="cert-question-count" type="number" value={mcqQuestions.length} readOnly className="bg-gray-50" />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm text-gray-700 border-b pb-2">考试内容</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-gray-600">选择题列表</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const nextId = mcqQuestions.length > 0 ? Math.max(...mcqQuestions.map((q) => q.id)) + 1 : 1;
+                        setMcqQuestions([
+                          ...mcqQuestions,
+                          { id: nextId, question: "", options: ["", "", "", ""], answer: "A", score: 2 },
+                        ]);
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      新增选择题
+                    </Button>
+                  </div>
+
+                  {mcqQuestions.map((q, questionIndex) => (
+                    <div key={q.id} className="rounded-lg border p-4 space-y-3 bg-gray-50">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline">第 {questionIndex + 1} 题</Badge>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={mcqQuestions.length === 1}
+                          className="text-red-600 hover:text-red-700"
+                          onClick={() => setMcqQuestions(mcqQuestions.filter((item) => item.id !== q.id))}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>题目 *</Label>
+                        <Textarea
+                          placeholder="请输入题目内容"
+                          rows={2}
+                          value={q.question}
+                          onChange={(e) => {
+                            const updated = [...mcqQuestions];
+                            updated[questionIndex] = { ...updated[questionIndex], question: e.target.value };
+                            setMcqQuestions(updated);
+                          }}
+                          required
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        {["A", "B", "C", "D"].map((label, optionIndex) => (
+                          <div key={label} className="space-y-1">
+                            <Label>选项 {label} *</Label>
+                            <Input
+                              placeholder={`请输入选项 ${label}`}
+                              value={q.options[optionIndex]}
+                              onChange={(e) => {
+                                const updated = [...mcqQuestions];
+                                const nextOptions = [...updated[questionIndex].options];
+                                nextOptions[optionIndex] = e.target.value;
+                                updated[questionIndex] = { ...updated[questionIndex], options: nextOptions };
+                                setMcqQuestions(updated);
+                              }}
+                              required
+                            />
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>正确答案 *</Label>
+                          <Select
+                            value={q.answer}
+                            onValueChange={(value) => {
+                              const updated = [...mcqQuestions];
+                              updated[questionIndex] = { ...updated[questionIndex], answer: value };
+                              setMcqQuestions(updated);
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="A">A</SelectItem>
+                              <SelectItem value="B">B</SelectItem>
+                              <SelectItem value="C">C</SelectItem>
+                              <SelectItem value="D">D</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>分值 *</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            value={q.score}
+                            onChange={(e) => {
+                              const updated = [...mcqQuestions];
+                              updated[questionIndex] = {
+                                ...updated[questionIndex],
+                                score: Math.max(1, Number(e.target.value || 1)),
+                              };
+                              setMcqQuestions(updated);
+                            }}
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-xs text-gray-500">支持按问卷方式持续新增选择题，并逐题配置答案与分值。</p>
+                </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cert-form-tags">课程标签</Label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      id="cert-form-tags"
+                      placeholder="输入课程标签后按回车添加"
+                      value={certTagInput}
+                      onChange={(e) => setCertTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const nextTag = certTagInput.trim();
+                          if (nextTag && !certFormTags.includes(nextTag)) {
+                            setCertFormTags([...certFormTags, nextTag]);
+                            setCertTagInput("");
+                          }
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const nextTag = certTagInput.trim();
+                        if (nextTag && !certFormTags.includes(nextTag)) {
+                          setCertFormTags([...certFormTags, nextTag]);
+                          setCertTagInput("");
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      添加
+                    </Button>
+                  </div>
+                  {certFormTags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border">
+                      {certFormTags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-sm">
+                          {tag}
+                          <X
+                            className="h-3 w-3 ml-1 cursor-pointer hover:text-red-600"
+                            onClick={() => setCertFormTags(certFormTags.filter((t) => t !== tag))}
+                          />
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCertDialogOpen(false)}>
+                取消
+              </Button>
+              <Button type="submit">创建认证</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* 市场活动对话框 */}
       <Dialog open={activityDialogOpen} onOpenChange={(open) => {
         setActivityDialogOpen(open);
@@ -3325,7 +3927,7 @@ export default function ContentManagement() {
                   <Label htmlFor="activity-title">活动名称 *</Label>
                   <Input
                     id="activity-title"
-                    placeholder="请输入活动名称，如：2024春季新品发布会"
+                    placeholder="请输入活动名称，例如：2024春季新品发布会"
                     required
                   />
                 </div>
@@ -3352,7 +3954,7 @@ export default function ContentManagement() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="upcoming">即将开始</SelectItem>
-                        <SelectItem value="ongoing">进行中</SelectItem>
+                        <SelectItem value="ongoing">进行</SelectItem>
                         <SelectItem value="completed">已完成</SelectItem>
                         <SelectItem value="cancelled">已取消</SelectItem>
                       </SelectContent>
@@ -3433,9 +4035,9 @@ export default function ContentManagement() {
                 </div>
               </div>
 
-              {/* 规模和预算 */}
+              {/* 活动规模 */}
               <div className="space-y-4">
-                <h4 className="font-medium text-sm text-gray-700 border-b pb-2">规模和预算</h4>
+                <h4 className="font-medium text-sm text-gray-700 border-b pb-2">活动规模</h4>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -3461,17 +4063,6 @@ export default function ContentManagement() {
                       className="bg-gray-50"
                     />
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="activity-budget">活动预算（元）</Label>
-                  <Input
-                    id="activity-budget"
-                    type="number"
-                    placeholder="请输入活动预算"
-                    min="0"
-                    step="1000"
-                  />
                 </div>
               </div>
 
@@ -3537,7 +4128,7 @@ export default function ContentManagement() {
                 <h4 className="font-medium text-sm text-gray-700 border-b pb-2">媒体资源</h4>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="activity-thumbnail">活动封面图 *</Label>
+                  <Label htmlFor="activity-thumbnail">活动封面 *</Label>
                   <div className="flex gap-2">
                     <Input
                       id="activity-thumbnail"
@@ -3551,7 +4142,7 @@ export default function ContentManagement() {
                     </Button>
                   </div>
                   <p className="text-xs text-gray-500">
-                    推荐尺寸：1200x675px (16:9)，格式：JPG/PNG
+                    推荐尺寸：1200x675px（16:9），格式：JPG/PNG
                   </p>
                 </div>
 
@@ -3570,7 +4161,7 @@ export default function ContentManagement() {
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="activity-contact-person">联系人</Label>
+                    <Label htmlFor="activity-contact-person">联系</Label>
                     <Input
                       id="activity-contact-person"
                       placeholder="请输入联系人姓名"
@@ -3700,7 +4291,7 @@ export default function ContentManagement() {
                   <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                     <Smartphone className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                     <p className="text-sm text-gray-600 mb-2">暂无表单字段</p>
-                    <p className="text-xs text-gray-500 mb-4">点击"添加字段"开始设计表单</p>
+                    <p className="text-xs text-gray-500 mb-4">点击“添加字段”开始设计表单</p>
                     <Button 
                       type="button" 
                       variant="outline"
@@ -3758,7 +4349,7 @@ export default function ContentManagement() {
                                   <SelectItem value="text">单行文本</SelectItem>
                                   <SelectItem value="textarea">多行文本</SelectItem>
                                   <SelectItem value="number">数字</SelectItem>
-                                  <SelectItem value="phone">手机号</SelectItem>
+                                  <SelectItem value="phone">手机</SelectItem>
                                   <SelectItem value="email">邮箱</SelectItem>
                                   <SelectItem value="date">日期</SelectItem>
                                   <SelectItem value="datetime">日期时间</SelectItem>
@@ -3797,7 +4388,7 @@ export default function ContentManagement() {
                           </Button>
                         </div>
                         
-                        {/* 下拉选择的选项配置 */}
+                        {/* 下拉选择的项配置 */}
                         {field.type === "select" && (
                           <div className="mt-3 pt-3 border-t">
                             <Label className="text-xs mb-2 block">下拉选项（每行一个）</Label>
@@ -3826,15 +4417,15 @@ export default function ContentManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center justify-between space-y-0 rounded-lg border p-3">
                     <div className="space-y-0.5">
-                      <Label className="text-sm font-medium">提交后显示感谢页面</Label>
-                      <p className="text-xs text-gray-600">用户提交后显示感谢信息</p>
+                      <Label className="text-sm font-medium">提交后显示感谢页</Label>
+                      <p className="text-xs text-gray-600">用户提交后显示感谢信</p>
                     </div>
                     <Switch defaultChecked={true} />
                   </div>
 
                   <div className="flex items-center justify-between space-y-0 rounded-lg border p-3">
                     <div className="space-y-0.5">
-                      <Label className="text-sm font-medium">邮件通知管理员</Label>
+                      <Label className="text-sm font-medium">邮件通知管理</Label>
                       <p className="text-xs text-gray-600">有新提交时发送邮件</p>
                     </div>
                     <Switch defaultChecked={false} />
@@ -3884,6 +4475,219 @@ export default function ContentManagement() {
         </DialogContent>
       </Dialog>
 
+      <Dialog
+        open={productEditDialogOpen}
+        onOpenChange={(open) => {
+          setProductEditDialogOpen(open);
+          if (!open) {
+            setEditingProductId(null);
+            setProductEditTagInput("");
+            setProductEditTags([]);
+          }
+        }}
+      >
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>编辑产品</DialogTitle>
+            <DialogDescription>编辑产品所有字段和标签</DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSaveProductEdit();
+            }}
+          >
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-product-title">产品名称 *</Label>
+                  <Input
+                    id="edit-product-title"
+                    value={productEditForm.title}
+                    onChange={(e) => setProductEditForm({ ...productEditForm, title: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-product-code">产品型号 *</Label>
+                  <Input
+                    id="edit-product-code"
+                    value={productEditForm.productCode}
+                    onChange={(e) => setProductEditForm({ ...productEditForm, productCode: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-product-type">类型</Label>
+                  <Input
+                    id="edit-product-type"
+                    value={productEditForm.type}
+                    onChange={(e) => setProductEditForm({ ...productEditForm, type: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-product-category">分类</Label>
+                  <Input
+                    id="edit-product-category"
+                    value={productEditForm.category}
+                    onChange={(e) => setProductEditForm({ ...productEditForm, category: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-product-author">作者/来源</Label>
+                  <Input
+                    id="edit-product-author"
+                    value={productEditForm.author}
+                    onChange={(e) => setProductEditForm({ ...productEditForm, author: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-product-status">状态</Label>
+                  <Input
+                    id="edit-product-status"
+                    value={productEditForm.status}
+                    onChange={(e) => setProductEditForm({ ...productEditForm, status: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-product-views">浏览量</Label>
+                  <Input
+                    id="edit-product-views"
+                    type="number"
+                    min="0"
+                    value={productEditForm.views}
+                    onChange={(e) => setProductEditForm({ ...productEditForm, views: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-product-create-time">创建时间</Label>
+                  <Input
+                    id="edit-product-create-time"
+                    value={productEditForm.createTime}
+                    onChange={(e) => setProductEditForm({ ...productEditForm, createTime: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-product-print-speed">打印速度</Label>
+                  <Input
+                    id="edit-product-print-speed"
+                    value={productEditForm.printSpeed}
+                    onChange={(e) => setProductEditForm({ ...productEditForm, printSpeed: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-product-price">价格</Label>
+                  <Input
+                    id="edit-product-price"
+                    value={productEditForm.price}
+                    onChange={(e) => setProductEditForm({ ...productEditForm, price: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-product-thumbnail">封面图URL</Label>
+                  <Input
+                    id="edit-product-thumbnail"
+                    value={productEditForm.thumbnail}
+                    onChange={(e) => setProductEditForm({ ...productEditForm, thumbnail: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-product-features">产品特性</Label>
+                <Textarea
+                  id="edit-product-features"
+                  rows={4}
+                  value={productEditForm.features}
+                  onChange={(e) => setProductEditForm({ ...productEditForm, features: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-product-tags">标签</Label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      id="edit-product-tags"
+                      placeholder="输入标签后按回车添加"
+                      value={productEditTagInput}
+                      onChange={(e) => setProductEditTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const nextTag = productEditTagInput.trim();
+                          if (nextTag && !productEditTags.includes(nextTag)) {
+                            setProductEditTags([...productEditTags, nextTag]);
+                            setProductEditTagInput("");
+                          }
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const nextTag = productEditTagInput.trim();
+                        if (nextTag && !productEditTags.includes(nextTag)) {
+                          setProductEditTags([...productEditTags, nextTag]);
+                          setProductEditTagInput("");
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      添加
+                    </Button>
+                  </div>
+                  {productEditTags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border">
+                      {productEditTags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-sm">
+                          {tag}
+                          <X
+                            className="h-3 w-3 ml-1 cursor-pointer hover:text-red-600"
+                            onClick={() => setProductEditTags(productEditTags.filter((t) => t !== tag))}
+                          />
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div>
+                  <Label htmlFor="edit-product-visible" className="text-sm font-medium">前台可见</Label>
+                  <p className="text-xs text-gray-500">控制该产品是否在前台展示</p>
+                </div>
+                <Switch
+                  id="edit-product-visible"
+                  checked={productEditForm.visible}
+                  onCheckedChange={(checked) => setProductEditForm({ ...productEditForm, visible: checked })}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setProductEditDialogOpen(false)}>
+                取消
+              </Button>
+              <Button type="submit">保存修改</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* 用户指南对话框 */}
       <Dialog open={guideDialogOpen} onOpenChange={(open) => {
         setGuideDialogOpen(open);
@@ -3914,7 +4718,7 @@ export default function ContentManagement() {
                   <Label htmlFor="guide-title">指南标题 *</Label>
                   <Input
                     id="guide-title"
-                    placeholder="例如：如何设置双面打印节省纸张"
+                    placeholder="如：双面打印设置教程"
                     required
                   />
                 </div>
@@ -3927,7 +4731,7 @@ export default function ContentManagement() {
                         <SelectValue placeholder="选择产品" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">全系列</SelectItem>
+                        <SelectItem value="all">全系</SelectItem>
                         <SelectItem value="im-c">RICOH IM C系列</SelectItem>
                         <SelectItem value="mp">RICOH MP系列</SelectItem>
                         <SelectItem value="sp">RICOH SP系列</SelectItem>
@@ -3974,13 +4778,13 @@ export default function ContentManagement() {
                   <Label htmlFor="guide-content">指南内容 *</Label>
                   <Textarea
                     id="guide-content"
-                    placeholder="请输入详细的操作步骤和说明&#10;&#10;建议格式：&#10;1. 第一步操作说明&#10;2. 第二步操作说明&#10;...&#10;&#10;💡 小贴士：可以添加实用提示&#10;⚠️ 注意事项：重要警告信息"
+                    placeholder="请输入详细的操作步骤和说明。建议格式：1. 第一步说明 2. 第二步说明 ..."
                     rows={18}
                     required
                     className="font-mono text-sm"
                   />
                   <p className="text-xs text-gray-500">
-                    支持使用emoji图标增强可读性：💡 ⚠️ ✅ ❌ 📝 🔧 等
+                    支持使用 emoji 图标增强可读性：💡 ⚠️ ✅ ❌ 🔵 🔶 等
                   </p>
                 </div>
               </div>
@@ -4036,7 +4840,7 @@ export default function ContentManagement() {
                       </div>
                     )}
                     <p className="text-xs text-gray-500">
-                      添加标签便于用户快速检索，如：节能环保、双面打印、故障排除等
+                      例如：双面打印、故障排除、维护保养
                     </p>
                   </div>
                 </div>
@@ -4081,3 +4885,8 @@ export default function ContentManagement() {
     </div>
   );
 }
+
+
+
+
+
