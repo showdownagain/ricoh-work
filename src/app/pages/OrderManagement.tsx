@@ -15,7 +15,6 @@ import {
   XCircle,
   Clock,
   AlertCircle,
-  Phone,
   MapPin,
   Download,
   Edit,
@@ -50,8 +49,6 @@ import {
 type OrderStatus =
   | "pending_customer_sign"
   | "pending_merchant_sign"
-  | "pending_stock"
-  | "no_stock"
   | "pending_payment"
   | "paid"
   | "shipped"
@@ -239,7 +236,7 @@ const mockOrders: OrderItem[] = [
     dealerPhone: "0571-8888-7777",
     products: [{ sku: "RICOH-MP-C3504", name: "RICOH MP C3504", quantity: 2, price: 18999 }],
     totalAmount: 37998,
-    status: "no_stock",
+    status: "cancelled",
     hasStock: false,
     stockConfirmTime: "2024-02-23 10:45",
     stockConfirmNote: "该型号暂时缺货，预计3周后到货",
@@ -326,7 +323,7 @@ const mockOrders: OrderItem[] = [
     dealerPhone: "0512-8888-2222",
     products: [{ sku: "RICOH-MP-C4504", name: "RICOH MP C4504", quantity: 1, price: 26999 }],
     totalAmount: 26999,
-    status: "pending_stock",
+    status: "pending_payment",
     hasStock: null,
     stockConfirmTime: "",
     stockConfirmNote: "",
@@ -351,8 +348,6 @@ const orderStatusMap: Record<
 > = {
   pending_customer_sign: { label: "待客户签署", variant: "outline", icon: FileText },
   pending_merchant_sign: { label: "待商家签署", variant: "outline", icon: Edit },
-  pending_stock: { label: "待确认库存", variant: "outline", icon: AlertCircle },
-  no_stock: { label: "无库存取消", variant: "destructive", icon: XCircle },
   pending_payment: { label: "待付款", variant: "default", icon: DollarSign },
   paid: { label: "已付款", variant: "secondary", icon: CheckCircle },
   shipped: { label: "已发货", variant: "default", icon: Truck },
@@ -372,11 +367,9 @@ export default function OrderManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [detailDialog, setDetailDialog] = useState(false);
-  const [stockDialog, setStockDialog] = useState(false);
   const [shippingDialog, setShippingDialog] = useState(false);
   const [invoiceDialog, setInvoiceDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
-  const [stockForm, setStockForm] = useState({ hasStock: true, note: "" });
   const [shippingForm, setShippingForm] = useState({ shippingCompany: "", trackingNo: "" });
   const [invoiceForm, setInvoiceForm] = useState({ invoiceNo: "", invoiceFileUrl: "", remark: "" });
 
@@ -391,35 +384,6 @@ export default function OrderManagement() {
   const handleViewOrder = (order: OrderItem) => {
     setSelectedOrder(order);
     setDetailDialog(true);
-  };
-
-  const handleOpenStockDialog = (order: OrderItem) => {
-    setSelectedOrder(order);
-    setStockForm({ hasStock: true, note: "" });
-    setStockDialog(true);
-  };
-
-  const handleConfirmStock = () => {
-    if (!selectedOrder) return;
-    if (!stockForm.note.trim()) {
-      alert("请填写库存确认备注");
-      return;
-    }
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.id === selectedOrder.id
-          ? {
-              ...order,
-              status: stockForm.hasStock ? "pending_payment" : "no_stock",
-              hasStock: stockForm.hasStock,
-              stockConfirmTime: now(),
-              stockConfirmNote: stockForm.note,
-            }
-          : order,
-      ),
-    );
-    setStockDialog(false);
-    setDetailDialog(false);
   };
 
   const handleCustomerSignedContract = (orderId: number) => {
@@ -445,7 +409,7 @@ export default function OrderManagement() {
         order.id === orderId
           ? {
               ...order,
-              status: "pending_stock",
+              status: "pending_payment",
               contractFlowStatus: "signed",
               contractMerchantSignTime: signedAt,
               contractSignedTime: signedAt,
@@ -600,14 +564,13 @@ export default function OrderManagement() {
                 订单状态与触发条件如下（按流转顺序）：
               </p>
               <ul className="text-sm text-blue-800 mt-2 space-y-1 list-disc list-inside">
-                <li>待确认库存：创建订单</li>
-                <li>无库存取消：无库存</li>
-                <li>待客户签署：有库存 + 需要合同</li>
-                <li>待商家签署：有库存 + 需要合同 + 客户签署</li>
+                <li>待客户签署：创建订单 + 需要合同</li>
+                <li>待商家签署：需要合同 + 客户签署</li>
                 <li>待付款：无需合同 或 双签确认完成</li>
                 <li>已付款：已上传付款凭证</li>
                 <li>已发货：已填写物流单号</li>
                 <li>已完成：已确认收货</li>
+                <li>已取消：订单取消或缺货关闭</li>
               </ul>
             </div>
           </div>
@@ -616,7 +579,7 @@ export default function OrderManagement() {
 
       <div className="grid gap-6 md:grid-cols-5">
         <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-gray-600">总订单</CardTitle><FileText className="h-5 w-5 text-blue-600" /></CardHeader><CardContent><div className="text-2xl font-bold">{orders.length}</div><p className="text-sm text-blue-600 font-semibold mt-1">¥{getTotalAmount().toLocaleString()}</p></CardContent></Card>
-        <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-gray-600">待确认库存</CardTitle><AlertCircle className="h-5 w-5 text-orange-600" /></CardHeader><CardContent><div className="text-2xl font-bold">{getStatusCount("pending_stock")}</div></CardContent></Card>
+        <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-gray-600">待签署</CardTitle><AlertCircle className="h-5 w-5 text-orange-600" /></CardHeader><CardContent><div className="text-2xl font-bold">{getStatusCount("pending_customer_sign") + getStatusCount("pending_merchant_sign")}</div></CardContent></Card>
         <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-gray-600">待付款</CardTitle><DollarSign className="h-5 w-5 text-blue-600" /></CardHeader><CardContent><div className="text-2xl font-bold">{getStatusCount("pending_payment")}</div></CardContent></Card>
         <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-gray-600">待发货</CardTitle><Package className="h-5 w-5 text-purple-600" /></CardHeader><CardContent><div className="text-2xl font-bold">{getStatusCount("paid")}</div></CardContent></Card>
         <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-gray-600">已完成</CardTitle><CheckCircle className="h-5 w-5 text-green-600" /></CardHeader><CardContent><div className="text-2xl font-bold">{getStatusCount("completed")}</div></CardContent></Card>
@@ -642,12 +605,11 @@ export default function OrderManagement() {
                   <SelectItem value="all">全部状态</SelectItem>
                   <SelectItem value="pending_customer_sign">待客户签署</SelectItem>
                   <SelectItem value="pending_merchant_sign">待商家签署</SelectItem>
-                  <SelectItem value="pending_stock">待确认库存</SelectItem>
                   <SelectItem value="pending_payment">待付款</SelectItem>
                   <SelectItem value="paid">已付款</SelectItem>
                   <SelectItem value="shipped">已发货</SelectItem>
                   <SelectItem value="completed">已完成</SelectItem>
-                  <SelectItem value="no_stock">无库存取消</SelectItem>
+                  <SelectItem value="cancelled">已取消</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -704,7 +666,6 @@ export default function OrderManagement() {
                 <div className="flex gap-3">
                   {selectedOrder.status === "pending_customer_sign" && <Button onClick={() => handleCustomerSignedContract(selectedOrder.id)}><FileText className="h-4 w-4 mr-2" />客户已签署</Button>}
                   {selectedOrder.status === "pending_merchant_sign" && <Button onClick={() => handleMerchantSignedContract(selectedOrder.id)}><Edit className="h-4 w-4 mr-2" />商家已签署</Button>}
-                  {selectedOrder.status === "pending_stock" && <Button onClick={() => handleOpenStockDialog(selectedOrder)}><Phone className="h-4 w-4 mr-2" />确认库存</Button>}
                   {selectedOrder.status === "paid" && <Button onClick={() => handleOpenShippingDialog(selectedOrder)}><Truck className="h-4 w-4 mr-2" />填写物流</Button>}
                   {(selectedOrder.status === "paid" || selectedOrder.status === "shipped" || selectedOrder.status === "completed") && (
                     <Button variant="outline" onClick={() => handleOpenInvoiceDialog(selectedOrder)}><Upload className="h-4 w-4 mr-2" />上传电子发票</Button>
@@ -748,17 +709,6 @@ export default function OrderManagement() {
             </div>
           )}
           <DialogFooter><Button variant="outline" onClick={() => setDetailDialog(false)}>关闭</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={stockDialog} onOpenChange={setStockDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>确认库存</DialogTitle><DialogDescription>请先联系经销商确认库存，再提交结果。</DialogDescription></DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2"><Label>库存状态 *</Label><Select value={stockForm.hasStock ? "yes" : "no"} onValueChange={(v) => setStockForm({ ...stockForm, hasStock: v === "yes" })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="yes">有库存，可发货</SelectItem><SelectItem value="no">无库存，取消订单</SelectItem></SelectContent></Select></div>
-            <div className="space-y-2"><Label>备注说明 *</Label><Textarea rows={4} value={stockForm.note} onChange={(e) => setStockForm({ ...stockForm, note: e.target.value })} placeholder="如：库存数量、预计发货时间" /></div>
-          </div>
-          <DialogFooter><Button variant="outline" onClick={() => setStockDialog(false)}>取消</Button><Button onClick={handleConfirmStock}>确认提交</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 

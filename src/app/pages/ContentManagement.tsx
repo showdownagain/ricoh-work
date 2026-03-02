@@ -480,7 +480,7 @@ const mockForms = [
   },
   {
     id: 2,
-    name: "售后服务申请表",
+    name: "报修申请表",
     type: "service",
     description: "用于收集客户售后服务需求",
     fields: [
@@ -702,6 +702,8 @@ type ProductItem = (typeof ricohProducts)[number];
 type UserGuideItem = (typeof mockUserGuides)[number];
 type TrainingCourseItem = (typeof mockTrainingCourses)[number];
 type CertificationItem = (typeof mockCertifications)[number];
+type FormItem = (typeof mockForms)[number];
+type FormField = FormItem["fields"][number];
 
 const bannerTagMap: Record<number, string[]> = {
   1: ["homepage", "campaign", "new"],
@@ -752,13 +754,19 @@ export default function ContentManagement() {
   const [enableLink, setEnableLink] = useState(false);
   const [bannerPosition, setBannerPosition] = useState("homepage");
   const [formDialogOpen, setFormDialogOpen] = useState(false);
-  const [formFields, setFormFields] = useState<Array<{id: number, label: string, type: string, required: boolean, options?: string[]}>>([]);
+  const [formFields, setFormFields] = useState<FormField[]>([]);
+  const [editingFormId, setEditingFormId] = useState<number | null>(null);
+  const [formMeta, setFormMeta] = useState({
+    name: "",
+    type: "inquiry",
+    description: "",
+  });
   const [banners, setBanners] = useState(mockBanners);
   const [cases, setCases] = useState(mockCases);
   const [activities, setActivities] = useState(mockActivities);
   const [news, setNews] = useState(mockNews);
   const [notifications, setNotifications] = useState(mockNotifications);
-  const [forms, setForms] = useState(mockForms);
+  const [forms, setForms] = useState<FormItem[]>(mockForms);
   const [products, setProducts] = useState(ricohProducts);
   const [productTagsMap, setProductTagsMap] = useState<Record<number, string[]>>(productTagMap);
   const [productSearchTerm, setProductSearchTerm] = useState("");
@@ -1106,6 +1114,85 @@ export default function ContentManagement() {
   const handleOpenDialog = () => {
     resetImport();
     setDialogOpen(true);
+  };
+
+  const resetFormEditor = () => {
+    setEditingFormId(null);
+    setFormMeta({
+      name: "",
+      type: "inquiry",
+      description: "",
+    });
+    setFormFields([]);
+  };
+
+  const closeFormDialog = () => {
+    setFormDialogOpen(false);
+    resetFormEditor();
+  };
+
+  const handleOpenCreateFormDialog = () => {
+    resetFormEditor();
+    setFormDialogOpen(true);
+  };
+
+  const handleOpenEditFormDialog = (form: FormItem) => {
+    setEditingFormId(form.id);
+    setFormMeta({
+      name: form.name,
+      type: form.type,
+      description: form.description,
+    });
+    setFormFields(
+      form.fields.map((field) => ({
+        ...field,
+        options: field.options ? [...field.options] : [],
+      })),
+    );
+    setFormDialogOpen(true);
+  };
+
+  const handleSubmitFormDialog = () => {
+    const normalizedFields = formFields.map((field, index) => ({
+      ...field,
+      id: index + 1,
+      label: field.label.trim(),
+      options: field.type === "select" ? (field.options || []).filter((option) => option.trim()) : undefined,
+    }));
+
+    if (editingFormId !== null) {
+      setForms((prev) =>
+        prev.map((form) =>
+          form.id === editingFormId
+            ? {
+                ...form,
+                name: formMeta.name.trim(),
+                type: formMeta.type,
+                description: formMeta.description.trim(),
+                fields: normalizedFields,
+              }
+            : form,
+        ),
+      );
+    } else {
+      const newId = forms.length > 0 ? Math.max(...forms.map((item) => item.id)) + 1 : 1;
+      const today = new Date().toISOString().slice(0, 10);
+      setForms((prev) => [
+        ...prev,
+        {
+          id: newId,
+          name: formMeta.name.trim(),
+          type: formMeta.type,
+          description: formMeta.description.trim(),
+          fields: normalizedFields,
+          submissions: 0,
+          createTime: today,
+          status: "active",
+        },
+      ]);
+    }
+
+    closeFormDialog();
   };
 
   return (
@@ -1833,7 +1920,7 @@ export default function ContentManagement() {
                   <h3 className="text-lg font-semibold">收集表单管理</h3>
                   <p className="text-sm text-gray-600">创建和管理自定义表单，收集用户提交的数据</p>
                 </div>
-                <Button onClick={() => setFormDialogOpen(true)}>
+                <Button onClick={handleOpenCreateFormDialog}>
                   <Plus className="h-4 w-4 mr-2" />
                   创建表单
                 </Button>
@@ -1958,7 +2045,7 @@ export default function ContentManagement() {
                         <Button variant="outline" size="sm">
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => handleOpenEditFormDialog(form)}>
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button 
@@ -4204,22 +4291,22 @@ export default function ContentManagement() {
 
       {/* 收集表单创建对话框 */}
       <Dialog open={formDialogOpen} onOpenChange={(open) => {
-        setFormDialogOpen(open);
         if (!open) {
-          setFormFields([]);
+          closeFormDialog();
+          return;
         }
+        setFormDialogOpen(true);
       }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>创建收集表单</DialogTitle>
+            <DialogTitle>{editingFormId !== null ? "编辑收集表单" : "创建收集表单"}</DialogTitle>
             <DialogDescription>
-              设计自定义表单，收集用户信息和反馈
+              {editingFormId !== null ? "修改表单配置并保存到当前记录" : "设计自定义表单，收集用户信息和反馈"}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={(e) => { 
-            e.preventDefault(); 
-            setFormDialogOpen(false);
-            setFormFields([]);
+            e.preventDefault();
+            handleSubmitFormDialog();
           }}>
             <div className="space-y-6 py-4">
               {/* 基本信息 */}
@@ -4232,12 +4319,14 @@ export default function ContentManagement() {
                     <Input
                       id="form-name"
                       placeholder="如：产品咨询表单"
+                      value={formMeta.name}
+                      onChange={(e) => setFormMeta({ ...formMeta, name: e.target.value })}
                       required
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="form-type">表单类型 *</Label>
-                    <Select defaultValue="inquiry">
+                    <Select value={formMeta.type} onValueChange={(value) => setFormMeta({ ...formMeta, type: value })}>
                       <SelectTrigger>
                         <SelectValue placeholder="选择类型" />
                       </SelectTrigger>
@@ -4259,6 +4348,8 @@ export default function ContentManagement() {
                     id="form-description"
                     placeholder="简要描述此表单的用途"
                     rows={2}
+                    value={formMeta.description}
+                    onChange={(e) => setFormMeta({ ...formMeta, description: e.target.value })}
                   />
                 </div>
               </div>
@@ -4272,8 +4363,9 @@ export default function ContentManagement() {
                     variant="outline" 
                     size="sm"
                     onClick={() => {
+                      const nextId = formFields.length > 0 ? Math.max(...formFields.map((field) => field.id)) + 1 : 1;
                       const newField = {
-                        id: formFields.length + 1,
+                        id: nextId,
                         label: "",
                         type: "text",
                         required: false,
@@ -4396,6 +4488,7 @@ export default function ContentManagement() {
                               placeholder="选项1&#10;选项2&#10;选项3"
                               rows={3}
                               className="text-sm"
+                              value={(field.options || []).join('\n')}
                               onChange={(e) => {
                                 const updated = [...formFields];
                                 updated[index].options = e.target.value.split('\n').filter(o => o.trim());
@@ -4462,13 +4555,12 @@ export default function ContentManagement() {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => {
-                setFormDialogOpen(false);
-                setFormFields([]);
+                closeFormDialog();
               }}>
                 取消
               </Button>
               <Button type="submit" disabled={formFields.length === 0}>
-                创建表单
+                {editingFormId !== null ? "保存修改" : "创建表单"}
               </Button>
             </DialogFooter>
           </form>
