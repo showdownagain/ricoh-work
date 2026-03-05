@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -95,19 +95,18 @@ const caseSolutionZhMap: Record<string, string> = {
   smart_campus_printing: "智慧校园打印方案",
 };
 
-const caseTagZhMap: Record<string, string> = {
-  digital_transformation: "数字化转型",
-  intelligent_manufacturing: "智能制造",
-  document_management: "文档管理",
-  enterprise: "大型企业",
-  finance: "金融",
-  secure_printing: "安全打印",
-  information_security: "信息安全",
-  banking: "银行",
-  education: "教育",
-  smart_campus: "智慧校园",
-  university: "高校",
-  large_scale_deployment: "批量部署",
+const defaultCaseTagZhMap: Record<string, string> = {
+  color_mfp: "彩色多功能",
+  office: "办公场景",
+  mid_volume: "中等负载",
+  workgroup: "工作组",
+  high_volume: "高负载",
+  smart: "智能办公",
+  security: "安全管控",
+  energy_saving: "节能低碳",
+  premium: "高端方案",
+  production: "生产级输出",
+  enterprise: "企业级部署",
 };
 
 const activityTitleZhMap: Record<string, string> = {
@@ -194,11 +193,12 @@ const mockBanners = [
   },
 ];
 
-// 案例库数据
+// 内容库数据
 const mockCases = [
   {
     id: 1,
     title: "manufacturing_digital_transformation",
+    contentType: "solution",
     customer: "shanghai_manufacturing_group",
     industry: "manufacturing",
     solution: "intelligent_document_system",
@@ -206,11 +206,12 @@ const mockCases = [
     createTime: "2024-01-20",
     thumbnail: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400",
     status: "published",
-    tags: ["digital_transformation", "intelligent_manufacturing", "document_management", "enterprise"],
+    tags: ["smart", "office", "enterprise"],
   },
   {
     id: 2,
     title: "finance_secure_printing",
+    contentType: "case",
     customer: "beijing_bank",
     industry: "finance",
     solution: "secure_printing_solution",
@@ -218,11 +219,12 @@ const mockCases = [
     createTime: "2024-01-18",
     thumbnail: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=400",
     status: "published",
-    tags: ["finance", "secure_printing", "information_security", "banking"],
+    tags: ["security", "high_volume", "enterprise"],
   },
   {
     id: 3,
     title: "education_smart_campus",
+    contentType: "video",
     customer: "guangzhou_university",
     industry: "education",
     solution: "smart_campus_printing",
@@ -230,7 +232,7 @@ const mockCases = [
     createTime: "2024-01-15",
     thumbnail: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400",
     status: "published",
-    tags: ["education", "smart_campus", "university", "large_scale_deployment"],
+    tags: ["color_mfp", "workgroup", "energy_saving"],
   },
 ];
 
@@ -317,7 +319,7 @@ const mockNotifications = [
     id: 1,
     title: "系统维护通知",
     content: "系统将于2024年2月20日02:00-06:00进行维护升级",
-    type: "title",
+    type: "rich_text",
     notificationType: "system",
     target: "all_users",
     sendTime: "2024-02-18 10:00:00",
@@ -332,7 +334,7 @@ const mockNotifications = [
     id: 2,
     title: "新产品上线通知",
     content: "RICOH IM C8000系列新品已上架，欢迎咨询。我们为您提供专业的办公解决方案，包括高速打印、智能扫描等多项功能。",
-    type: "content",
+    type: "rich_text",
     notificationType: "marketing",
     target: "dealers",
     sendTime: "2024-02-15 09:00:00",
@@ -347,7 +349,7 @@ const mockNotifications = [
     id: 3,
     title: "春季大促活动",
     content: "春季大促即将开始，敬请期待",
-    type: "image",
+    type: "rich_text",
     notificationType: "marketing",
     target: "customers",
     sendTime: "",
@@ -706,6 +708,7 @@ type ProductItem = (typeof ricohProducts)[number];
 type UserGuideItem = (typeof mockUserGuides)[number];
 type TrainingCourseItem = (typeof mockTrainingCourses)[number];
 type CertificationItem = (typeof mockCertifications)[number];
+type NotificationItem = (typeof mockNotifications)[number];
 type FormItem = (typeof mockForms)[number];
 type FormField = FormItem["fields"][number];
 
@@ -730,9 +733,9 @@ const formTagMap: Record<number, string[]> = {
 };
 
 const productTagMap: Record<number, string[]> = {
-  101: ["color-mfp", "office", "mid-volume"],
-  102: ["color-mfp", "workgroup", "high-volume"],
-  103: ["smart", "security", "energy-saving"],
+  101: ["color_mfp", "office", "mid_volume"],
+  102: ["color_mfp", "workgroup", "high_volume"],
+  103: ["smart", "security", "energy_saving"],
   104: ["premium", "production", "enterprise"],
 };
 
@@ -754,8 +757,13 @@ export default function ContentManagement() {
   const [bannerDialogOpen, setBannerDialogOpen] = useState(false);
   const [activityDialogOpen, setActivityDialogOpen] = useState(false);
   const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
-  const [notificationType, setNotificationType] = useState("title");
   const [enableLink, setEnableLink] = useState(false);
+  const [notificationCategory, setNotificationCategory] = useState("system");
+  const [notificationTarget, setNotificationTarget] = useState("all_users");
+  const [notificationTitle, setNotificationTitle] = useState("");
+  const [notificationSendTime, setNotificationSendTime] = useState("");
+  const [notificationLink, setNotificationLink] = useState("");
+  const notificationEditorRef = useRef<HTMLDivElement | null>(null);
   const [bannerPosition, setBannerPosition] = useState("homepage");
   const [formDialogOpen, setFormDialogOpen] = useState(false);
   const [formFields, setFormFields] = useState<FormField[]>([]);
@@ -773,6 +781,12 @@ export default function ContentManagement() {
   const [forms, setForms] = useState<FormItem[]>(mockForms);
   const [products, setProducts] = useState(ricohProducts);
   const [productTagsMap, setProductTagsMap] = useState<Record<number, string[]>>(productTagMap);
+  const [tagCodeMap, setTagCodeMap] = useState<Record<string, string>>(defaultCaseTagZhMap);
+  const [tagManageDialogOpen, setTagManageDialogOpen] = useState(false);
+  const [newTagCode, setNewTagCode] = useState("");
+  const [newTagName, setNewTagName] = useState("");
+  const [editingTagCode, setEditingTagCode] = useState<string | null>(null);
+  const [editingTagName, setEditingTagName] = useState("");
   const [productSearchTerm, setProductSearchTerm] = useState("");
   const [userGuides, setUserGuides] = useState(mockUserGuides);
   const [trainingCourses, setTrainingCourses] = useState(mockTrainingCourses);
@@ -809,7 +823,8 @@ export default function ContentManagement() {
   const [certFormTags, setCertFormTags] = useState<string[]>([]);
   const [productEditDialogOpen, setProductEditDialogOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
-  const [productEditTagInput, setProductEditTagInput] = useState("");
+  const [productTagCandidate, setProductTagCandidate] = useState("");
+  const [caseTagCandidate, setCaseTagCandidate] = useState("");
   const [productEditTags, setProductEditTags] = useState<string[]>([]);
   const [productEditForm, setProductEditForm] = useState({
     title: "",
@@ -847,6 +862,7 @@ export default function ContentManagement() {
     industry: "",
     solution: "",
     category: "",
+    contentType: "case",
   });
 
   // 初始化产品数据 - 更新图片和可见性
@@ -874,7 +890,10 @@ export default function ContentManagement() {
   const getCaseCustomerZh = (value: string) => caseCustomerZhMap[value] || value;
   const getCaseIndustryZh = (value: string) => caseIndustryZhMap[value] || value;
   const getCaseSolutionZh = (value: string) => caseSolutionZhMap[value] || value;
-  const getCaseTagZh = (value: string) => caseTagZhMap[value] || value;
+  const getCaseTagZh = (value: string) => tagCodeMap[value] || value;
+  const sharedContentProductTags = Object.keys(tagCodeMap);
+  const getCaseContentTypeZh = (value?: string) =>
+    value === "solution" ? "解决方案" : value === "video" ? "视频" : "案例";
   const getActivityTitleZh = (value: string) => activityTitleZhMap[value] || value;
   const getActivityTypeZh = (value: string) => activityTypeZhMap[value] || value;
   const getActivityLocationZh = (value: string) => activityLocationZhMap[value] || value;
@@ -1026,7 +1045,7 @@ export default function ContentManagement() {
       visible: product.visible !== false,
     });
     setProductEditTags([...(getProductTags(product.id) || [])]);
-    setProductEditTagInput("");
+    setProductTagCandidate("");
     setProductEditDialogOpen(true);
   };
 
@@ -1051,6 +1070,87 @@ export default function ContentManagement() {
     setEditingProductId(null);
   };
 
+  const normalizeTagCode = (value: string) =>
+    value.trim().toLowerCase().replace(/\s+/g, "_");
+
+  const handleAddTagCode = () => {
+    const code = normalizeTagCode(newTagCode);
+    const name = newTagName.trim();
+    if (!code || !name) {
+      alert("请输入标签编码和标签名称");
+      return;
+    }
+    if (tagCodeMap[code]) {
+      alert("标签编码已存在");
+      return;
+    }
+    setTagCodeMap((prev) => ({ ...prev, [code]: name }));
+    setNewTagCode("");
+    setNewTagName("");
+  };
+
+  const handleStartTagEdit = (code: string) => {
+    setEditingTagCode(code);
+    setEditingTagName(tagCodeMap[code] || "");
+  };
+
+  const handleSaveTagEdit = () => {
+    if (!editingTagCode) return;
+    const nextName = editingTagName.trim();
+    if (!nextName) {
+      alert("标签名称不能为空");
+      return;
+    }
+    setTagCodeMap((prev) => ({ ...prev, [editingTagCode]: nextName }));
+    setEditingTagCode(null);
+    setEditingTagName("");
+  };
+
+  const handleDeleteTagCode = (code: string) => {
+    setTagCodeMap((prev) => {
+      const next = { ...prev };
+      delete next[code];
+      return next;
+    });
+    setSelectedTags((prev) => ({
+      ...prev,
+      cases: (prev.cases || []).filter((item) => item !== code),
+      products: (prev.products || []).filter((item) => item !== code),
+    }));
+    setCases((prev) =>
+      prev.map((item) => ({
+        ...item,
+        tags: (item.tags || []).filter((tag) => tag !== code),
+      })),
+    );
+    setProductTagsMap((prev) => {
+      const next: Record<number, string[]> = {};
+      Object.entries(prev).forEach(([id, tags]) => {
+        next[Number(id)] = tags.filter((tag) => tag !== code);
+      });
+      return next;
+    });
+    setProductEditTags((prev) => prev.filter((tag) => tag !== code));
+    if (productTagCandidate === code) {
+      setProductTagCandidate("");
+    }
+    if (caseTagCandidate === code) {
+      setCaseTagCandidate("");
+    }
+  };
+
+  const handleAddCaseTag = () => {
+    if (!caseTagCandidate || currentTags.includes(caseTagCandidate)) return;
+    setCurrentTags([...currentTags, caseTagCandidate]);
+    setCaseTagCandidate("");
+  };
+
+  const handleAddProductTag = () => {
+    if (!productTagCandidate || productEditTags.includes(productTagCandidate)) return;
+    setProductEditTags([...productEditTags, productTagCandidate]);
+    setProductTagCandidate("");
+  };
+
   // 模拟URL导入功能
   const handleImportFromUrl = async () => {
     if (!importUrl) return;
@@ -1065,12 +1165,13 @@ export default function ContentManagement() {
     let mockData: Partial<typeof formData> = {};
     
     if (mainTab === "cases") {
-      // 案例库模拟数据
+      // 内容库模拟数据
       mockData = {
         title: "数字化办公转型案例：企业效率提升实践",
         customer: "示例科技有限公司",
         industry: "科技",
         solution: "智能办公与文档管理一体化方案",
+        contentType: "solution",
         content:
           "该企业上线智能打印与文档管理系统后，完成了打印流程标准化与自动化，减少重复操作，提升协同效率。项目实施后，打印成本显著下降，文档流转效率明显提升。",
         summary:
@@ -1111,13 +1212,84 @@ export default function ContentManagement() {
       industry: "",
       solution: "",
       category: "",
+      contentType: "case",
     });
   };
 
   // 打开对话框时重置状态
   const handleOpenDialog = () => {
     resetImport();
+    setCurrentTags([]);
+    setCaseTagCandidate("");
     setDialogOpen(true);
+  };
+
+  const getNotificationPlainText = (content: string) =>
+    content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+  const resetNotificationForm = () => {
+    setNotificationTitle("");
+    setNotificationCategory("system");
+    setNotificationTarget("all_users");
+    setNotificationSendTime("");
+    setEnableLink(false);
+    setNotificationLink("");
+    if (notificationEditorRef.current) {
+      notificationEditorRef.current.innerHTML = "";
+    }
+  };
+
+  const handleOpenNotificationDialog = () => {
+    resetNotificationForm();
+    setNotificationDialogOpen(true);
+  };
+
+  const handleApplyNotificationFormat = (command: string, value?: string) => {
+    if (!notificationEditorRef.current) return;
+    notificationEditorRef.current.focus();
+    document.execCommand(command, false, value);
+  };
+
+  const handleSubmitNotification = (status: "draft" | "sent") => {
+    const rawHtml = notificationEditorRef.current?.innerHTML || "";
+    const plainText = getNotificationPlainText(rawHtml);
+    if (!notificationTitle.trim()) {
+      alert("请输入通知标题");
+      return;
+    }
+    if (!plainText) {
+      alert("请输入通知内容");
+      return;
+    }
+
+    const nextId = notifications.length > 0 ? Math.max(...notifications.map((item) => item.id)) + 1 : 1;
+    const sendTime =
+      status === "sent"
+        ? notificationSendTime
+          ? `${notificationSendTime.replace("T", " ")}:00`
+          : new Date().toLocaleString("zh-CN", { hour12: false })
+        : "";
+
+    const finalLink = enableLink ? notificationLink.trim() : "";
+    const newNotification: NotificationItem = {
+      id: nextId,
+      title: notificationTitle.trim(),
+      content: rawHtml,
+      type: "rich_text",
+      notificationType: notificationCategory,
+      target: notificationTarget,
+      sendTime,
+      status,
+      readCount: 0,
+      totalCount: 0,
+      image: "",
+      link: finalLink,
+      enableLink: Boolean(finalLink),
+    };
+
+    setNotifications((prev) => [newNotification, ...prev]);
+    setNotificationDialogOpen(false);
+    resetNotificationForm();
   };
 
   const resetFormEditor = () => {
@@ -1215,7 +1387,7 @@ export default function ContentManagement() {
               </TabsTrigger>
               <TabsTrigger value="cases" className="flex items-center gap-2">
                 <Briefcase className="h-4 w-4" />
-                案例库
+                内容库
               </TabsTrigger>
               <TabsTrigger value="activities" className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
@@ -1390,62 +1562,65 @@ export default function ContentManagement() {
               </div>
             </TabsContent>
 
-            {/* 案例库维护 */}
+            {/* 内容库维护 */}
             <TabsContent value="cases" className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold">案例库维护</h3>
-                  <p className="text-sm text-gray-600">管理客户成功案例和行业解决方案</p>
+                  <h3 className="text-lg font-semibold">内容库维护</h3>
+                  <p className="text-sm text-gray-600">统一管理解决方案、案例与视频内容</p>
                 </div>
-                <Button onClick={() => handleOpenDialog()}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  添加案例
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" onClick={() => setTagManageDialogOpen(true)}>
+                    设置标签
+                  </Button>
+                  <Button onClick={() => handleOpenDialog()}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    添加内容
+                  </Button>
+                </div>
               </div>
 
               {/* 标签快捷索引 */}
-              {cases.some((c: CaseItem) => c.tags && c.tags.length > 0) && (
-                <div className="bg-gray-50 rounded-lg p-4 border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Tag className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm font-medium text-gray-700">标签快捷索引</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {Array.from(new Set(cases.flatMap((c: CaseItem) => c.tags || []))).map((tag: string) => {
-                      const isSelected = selectedTags.cases?.includes(tag);
-                      return (
-                        <Badge
-                          key={tag}
-                          variant={isSelected ? "default" : "outline"}
-                          className={isSelected ? "cursor-pointer transition-all bg-blue-600" : "cursor-pointer transition-all hover:bg-blue-50"}
-                          onClick={() => {
-                            const currentSelected = selectedTags.cases || [];
-                            setSelectedTags({
-                              ...selectedTags,
-                              cases: isSelected
-                                ? currentSelected.filter((t: string) => t !== tag)
-                                : [...currentSelected, tag]
-                            });
-                          }}
-                        >
-                          {getCaseTagZh(tag)}
-                          {isSelected && <X className="h-3 w-3 ml-1" />}
-                        </Badge>
-                      );
-                    })}
-                    {selectedTags.cases && selectedTags.cases.length > 0 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedTags({ ...selectedTags, cases: [] })}
-                        className="h-6 text-xs"
-                      >
-                        清除筛选
-                      </Button>
-                    )}
-                  </div>
+              <div className="bg-gray-50 rounded-lg p-4 border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Tag className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-medium text-gray-700">标签快捷索引</span>
                 </div>
-              )}
+                <div className="flex flex-wrap gap-2">
+                  {sharedContentProductTags.map((tag: string) => {
+                    const isSelected = selectedTags.cases?.includes(tag);
+                    return (
+                      <Badge
+                        key={tag}
+                        variant={isSelected ? "default" : "outline"}
+                        className={isSelected ? "cursor-pointer transition-all bg-blue-600" : "cursor-pointer transition-all hover:bg-blue-50"}
+                        onClick={() => {
+                          const currentSelected = selectedTags.cases || [];
+                          setSelectedTags({
+                            ...selectedTags,
+                            cases: isSelected
+                              ? currentSelected.filter((t: string) => t !== tag)
+                              : [...currentSelected, tag]
+                          });
+                        }}
+                      >
+                        {getCaseTagZh(tag)}
+                        {isSelected && <X className="h-3 w-3 ml-1" />}
+                      </Badge>
+                    );
+                  })}
+                  {selectedTags.cases && selectedTags.cases.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedTags({ ...selectedTags, cases: [] })}
+                      className="h-6 text-xs"
+                    >
+                      清除筛选
+                    </Button>
+                  )}
+                </div>
+              </div>
 
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {cases
@@ -1461,6 +1636,9 @@ export default function ContentManagement() {
                         alt={getCaseTitleZh(caseItem.title)}
                         className="w-full h-full object-cover"
                       />
+                      <div className="absolute top-2 left-2">
+                        <Badge variant="secondary">{getCaseContentTypeZh(caseItem.contentType)}</Badge>
+                      </div>
                       <div className="absolute top-2 right-2">
                         <Badge>{getCaseIndustryZh(caseItem.industry)}</Badge>
                       </div>
@@ -1675,7 +1853,7 @@ export default function ContentManagement() {
                             });
                           }}
                         >
-                          {tag}
+                          {getCaseTagZh(tag)}
                           {isSelected && <X className="h-3 w-3 ml-1" />}
                         </Badge>
                       );
@@ -1770,7 +1948,7 @@ export default function ContentManagement() {
                   <h3 className="text-lg font-semibold">通知推送</h3>
                   <p className="text-sm text-gray-600">管理系统通知和营销推送消息</p>
                 </div>
-                <Button onClick={() => setNotificationDialogOpen(true)}>
+                <Button onClick={handleOpenNotificationDialog}>
                   <Plus className="h-4 w-4 mr-2" />
                   创建通知
                 </Button>
@@ -1826,7 +2004,7 @@ export default function ContentManagement() {
                       <TableHead>标题</TableHead>
                       <TableHead>内容</TableHead>
                       <TableHead>链接</TableHead>
-                      <TableHead>类型</TableHead>
+                      <TableHead>分类</TableHead>
                       <TableHead>目标用户</TableHead>
                       <TableHead>发送时间</TableHead>
                       <TableHead>阅读数</TableHead>
@@ -1849,7 +2027,7 @@ export default function ContentManagement() {
                             </div>
                           )}
                         </TableCell>
-                        <TableCell className="max-w-xs truncate">{notification.content}</TableCell>
+                        <TableCell className="max-w-xs truncate">{getNotificationPlainText(notification.content)}</TableCell>
                         <TableCell>
                           {notification.enableLink && notification.link ? (
                             <a 
@@ -2084,52 +2262,50 @@ export default function ContentManagement() {
                 />
               </div>
 
-              {products.some((p) => getProductTags(p.id).length > 0) && (
-                <div className="bg-gray-50 rounded-lg p-4 border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Tag className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm font-medium text-gray-700">标签快捷索引</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {Array.from(new Set(products.flatMap((p) => getProductTags(p.id)))).map((tag: string) => {
-                      const isSelected = selectedTags.products?.includes(tag);
-                      const badgeClass = isSelected
-                        ? "cursor-pointer transition-all bg-blue-600"
-                        : "cursor-pointer transition-all hover:bg-blue-50";
-
-                      return (
-                        <Badge
-                          key={tag}
-                          variant={isSelected ? "default" : "outline"}
-                          className={badgeClass}
-                          onClick={() => {
-                            const currentSelected = selectedTags.products || [];
-                            setSelectedTags({
-                              ...selectedTags,
-                              products: isSelected
-                                ? currentSelected.filter((t: string) => t !== tag)
-                                : [...currentSelected, tag],
-                            });
-                          }}
-                        >
-                          {tag}
-                          {isSelected && <X className="h-3 w-3 ml-1" />}
-                        </Badge>
-                      );
-                    })}
-                    {selectedTags.products && selectedTags.products.length > 0 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedTags({ ...selectedTags, products: [] })}
-                        className="h-6 text-xs"
-                      >
-                        清除筛选
-                      </Button>
-                    )}
-                  </div>
+              <div className="bg-gray-50 rounded-lg p-4 border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Tag className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-medium text-gray-700">标签快捷索引</span>
                 </div>
-              )}
+                <div className="flex flex-wrap gap-2">
+                  {sharedContentProductTags.map((tag: string) => {
+                    const isSelected = selectedTags.products?.includes(tag);
+                    const badgeClass = isSelected
+                      ? "cursor-pointer transition-all bg-blue-600"
+                      : "cursor-pointer transition-all hover:bg-blue-50";
+
+                    return (
+                      <Badge
+                        key={tag}
+                        variant={isSelected ? "default" : "outline"}
+                        className={badgeClass}
+                        onClick={() => {
+                          const currentSelected = selectedTags.products || [];
+                          setSelectedTags({
+                            ...selectedTags,
+                            products: isSelected
+                              ? currentSelected.filter((t: string) => t !== tag)
+                              : [...currentSelected, tag],
+                          });
+                        }}
+                      >
+                        {getCaseTagZh(tag)}
+                        {isSelected && <X className="h-3 w-3 ml-1" />}
+                      </Badge>
+                    );
+                  })}
+                  {selectedTags.products && selectedTags.products.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedTags({ ...selectedTags, products: [] })}
+                      className="h-6 text-xs"
+                    >
+                      清除筛选
+                    </Button>
+                  )}
+                </div>
+              </div>
 
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {filteredProducts.map((product: ProductItem) => (
@@ -2154,7 +2330,7 @@ export default function ContentManagement() {
                           <div className="flex flex-wrap gap-1 mb-2">
                             {getProductTags(product.id).slice(0, 3).map((tag: string) => (
                               <Badge key={tag} variant="secondary" className="text-xs">
-                                {tag}
+                                {getCaseTagZh(tag)}
                               </Badge>
                             ))}
                           </div>
@@ -2723,160 +2899,89 @@ export default function ContentManagement() {
       </Card>
 
       {/* 创建通知对话框 */}
-      <Dialog open={notificationDialogOpen} onOpenChange={setNotificationDialogOpen}>
+      <Dialog
+        open={notificationDialogOpen}
+        onOpenChange={(open) => {
+          setNotificationDialogOpen(open);
+          if (!open) {
+            resetNotificationForm();
+          }
+        }}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>创建通知</DialogTitle>
             <DialogDescription>
-              选择通知类型并填写相关信息
+              通知内容统一为富文本编辑模式
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); setNotificationDialogOpen(false); }}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmitNotification("sent");
+            }}
+          >
             <div className="space-y-4 py-4">
-              {/* 通知类型选择 */}
-              <div className="space-y-2">
-                <Label>通知类型</Label>
-                <div className="grid grid-cols-3 gap-4">
-                  <div
-                    onClick={() => setNotificationType("title")}
-                    className={
-                      notificationType === "title"
-                        ? "p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 border-blue-600 bg-blue-50"
-                        : "p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 border-gray-200"
-                    }
-                  >
-                    <div className="text-center space-y-2">
-                      <Bell
-                        className={
-                          notificationType === "title"
-                            ? "h-8 w-8 mx-auto text-blue-600"
-                            : "h-8 w-8 mx-auto text-gray-400"
-                        }
-                      />
-                      <div>
-                        <p className="font-medium">标题通知</p>
-                        <p className="text-xs text-gray-500 mt-1">简短标题+副标题</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    onClick={() => setNotificationType("content")}
-                    className={
-                      notificationType === "content"
-                        ? "p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 border-blue-600 bg-blue-50"
-                        : "p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 border-gray-200"
-                    }
-                  >
-                    <div className="text-center space-y-2">
-                      <Newspaper
-                        className={
-                          notificationType === "content"
-                            ? "h-8 w-8 mx-auto text-blue-600"
-                            : "h-8 w-8 mx-auto text-gray-400"
-                        }
-                      />
-                      <div>
-                        <p className="font-medium">内容通知</p>
-                        <p className="text-xs text-gray-500 mt-1">标题+详细内容</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    onClick={() => setNotificationType("image")}
-                    className={
-                      notificationType === "image"
-                        ? "p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 border-blue-600 bg-blue-50"
-                        : "p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500 border-gray-200"
-                    }
-                  >
-                    <div className="text-center space-y-2">
-                      <ImageIcon
-                        className={
-                          notificationType === "image"
-                            ? "h-8 w-8 mx-auto text-blue-600"
-                            : "h-8 w-8 mx-auto text-gray-400"
-                        }
-                      />
-                      <div>
-                        <p className="font-medium">图片通知</p>
-                        <p className="text-xs text-gray-500 mt-1">标题+内容+图片</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 标题 */}
               <div className="space-y-2">
                 <Label htmlFor="notification-title">通知标题 *</Label>
                 <Input
                   id="notification-title"
                   placeholder="请输入通知标题"
+                  value={notificationTitle}
+                  onChange={(e) => setNotificationTitle(e.target.value)}
                   required
                 />
               </div>
 
-              {/* 内容 - 标题类型显示为副标题 */}
-              {notificationType === "title" && (
-                <div className="space-y-2">
-                  <Label htmlFor="notification-subtitle">副标题</Label>
-                  <Input
-                    id="notification-subtitle"
-                    placeholder="请输入副标题（可选）"
-                  />
-                </div>
-              )}
-
-              {/* 内容 - 内容类型和图片类型显示为详细内容 */}
-              {(notificationType === "content" || notificationType === "image") && (
-                <div className="space-y-2">
-                  <Label htmlFor="notification-content">通知内容 *</Label>
-                  <Textarea
-                    id="notification-content"
-                    placeholder="请输入通知的详细内容"
-                    rows={5}
-                    required
-                  />
-                </div>
-              )}
-
-              {/* 图片上传 - 仅图片类型显示 */}
-              {notificationType === "image" && (
-                <div className="space-y-2">
-                  <Label htmlFor="notification-image">通知图片 *</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="notification-image"
-                      placeholder="请输入图片 URL 或上传图片"
-                      className="flex-1"
-                      required
-                    />
-                    <Button type="button" variant="outline">
-                      <ImageIcon className="h-4 w-4 mr-2" />
-                      上传图片
+              <div className="space-y-2">
+                <Label>通知内容（富文本） *</Label>
+                <div className="border rounded-lg">
+                  <div className="flex flex-wrap gap-2 p-2 border-b bg-gray-50">
+                    <Button type="button" variant="outline" size="sm" onClick={() => handleApplyNotificationFormat("bold")}>
+                      加粗
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => handleApplyNotificationFormat("italic")}>
+                      斜体
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => handleApplyNotificationFormat("insertUnorderedList")}>
+                      无序列表
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => handleApplyNotificationFormat("insertOrderedList")}>
+                      有序列表
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => handleApplyNotificationFormat("formatBlock", "H3")}>
+                      标题
                     </Button>
                   </div>
-                  <p className="text-xs text-gray-500">建议尺寸：800x400px，格式：JPG/PNG</p>
+                  <div
+                    ref={notificationEditorRef}
+                    contentEditable
+                    className="min-h-[180px] p-3 text-sm focus:outline-none"
+                    data-placeholder="请输入通知正文，可添加段落、列表和标题"
+                    suppressContentEditableWarning
+                  />
                 </div>
-              )}
+                <p className="text-xs text-gray-500">
+                  提示：可直接粘贴格式化文本，系统将保存为富文本内容
+                </p>
+              </div>
 
-              {/* 通知分类 */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="notification-category">通知分类</Label>
-                  <Select defaultValue="system">
+                  <Select value={notificationCategory} onValueChange={setNotificationCategory}>
                     <SelectTrigger>
                       <SelectValue placeholder="选择通知分类" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="system">系统通知</SelectItem>
-                      <SelectItem value="marketing">营销推</SelectItem>
+                      <SelectItem value="marketing">营销推送</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="notification-target">目标用户</Label>
-                  <Select defaultValue="all_users">
+                  <Select value={notificationTarget} onValueChange={setNotificationTarget}>
                     <SelectTrigger>
                       <SelectValue placeholder="选择目标用户" />
                     </SelectTrigger>
@@ -2889,18 +2994,18 @@ export default function ContentManagement() {
                 </div>
               </div>
 
-              {/* 发送时间 */}
               <div className="space-y-2">
                 <Label htmlFor="notification-time">发送时间</Label>
                 <Input
                   id="notification-time"
                   type="datetime-local"
+                  value={notificationSendTime}
+                  onChange={(e) => setNotificationSendTime(e.target.value)}
                   placeholder="立即发送"
                 />
                 <p className="text-xs text-gray-500">留空表示立即发送，或选择定时发送</p>
               </div>
 
-              {/* 查看详情链接 */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="notification-link">查看详情链接</Label>
@@ -2922,22 +3027,14 @@ export default function ContentManagement() {
                         <Input
                           id="notification-link"
                           placeholder="请输入跳转链接，例如：/products/new-item"
-                          defaultValue=""
+                          value={notificationLink}
+                          onChange={(e) => setNotificationLink(e.target.value)}
                         />
                         <p className="text-xs text-gray-500">
                           启用后，通知可跳转页面查看详情
                         </p>
                       </div>
                       <Link2 className="h-5 w-5 text-gray-400 mt-2" />
-                    </div>
-                    <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm">
-                      <p className="font-medium text-blue-900 mb-1">链接示例</p>
-                      <ul className="text-blue-700 space-y-1 text-xs">
-                          <li>• 产品详情：`/products/ricoh-im-c6000`</li>
-                          <li>• 活动页面：`/activities/spring-sale-2024`</li>
-                          <li>• 新闻详情：`/news/company-announcement`</li>
-                          <li>• 外部链接：`https://www.ricoh.com.cn`</li>
-                      </ul>
                     </div>
                   </>
                 )}
@@ -2947,7 +3044,7 @@ export default function ContentManagement() {
               <Button type="button" variant="outline" onClick={() => setNotificationDialogOpen(false)}>
                 取消
               </Button>
-              <Button type="button" variant="secondary">
+              <Button type="button" variant="secondary" onClick={() => handleSubmitNotification("draft")}>
                 保存草稿
               </Button>
               <Button type="submit">
@@ -2958,23 +3055,132 @@ export default function ContentManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* 案例库/新闻内容对话框 */}
+      {/* 标签编码设置 */}
+      <Dialog
+        open={tagManageDialogOpen}
+        onOpenChange={(open) => {
+          setTagManageDialogOpen(open);
+          if (!open) {
+            setNewTagCode("");
+            setNewTagName("");
+            setEditingTagCode(null);
+            setEditingTagName("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>设置标签</DialogTitle>
+            <DialogDescription>统一维护内容库、产品库、商品管理的标签编码与名称</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-12 gap-2">
+              <div className="col-span-5">
+                <Input
+                  placeholder="标签编码（如 color_mfp）"
+                  value={newTagCode}
+                  onChange={(e) => setNewTagCode(e.target.value)}
+                />
+              </div>
+              <div className="col-span-5">
+                <Input
+                  placeholder="标签名称（如 彩色多功能）"
+                  value={newTagName}
+                  onChange={(e) => setNewTagName(e.target.value)}
+                />
+              </div>
+              <div className="col-span-2">
+                <Button type="button" className="w-full" onClick={handleAddTagCode}>
+                  添加
+                </Button>
+              </div>
+            </div>
+
+            <div className="max-h-[320px] overflow-y-auto rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>标签编码</TableHead>
+                    <TableHead>标签名称</TableHead>
+                    <TableHead className="w-[140px]">操作</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sharedContentProductTags.map((code) => (
+                    <TableRow key={code}>
+                      <TableCell className="font-mono text-sm">{code}</TableCell>
+                      <TableCell>
+                        {editingTagCode === code ? (
+                          <Input
+                            value={editingTagName}
+                            onChange={(e) => setEditingTagName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleSaveTagEdit();
+                              }
+                            }}
+                          />
+                        ) : (
+                          tagCodeMap[code]
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {editingTagCode === code ? (
+                            <Button type="button" size="sm" variant="outline" onClick={handleSaveTagEdit}>
+                              保存
+                            </Button>
+                          ) : (
+                            <Button type="button" size="sm" variant="outline" onClick={() => handleStartTagEdit(code)}>
+                              编辑
+                            </Button>
+                          )}
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-600 hover:text-red-700"
+                            onClick={() => handleDeleteTagCode(code)}
+                          >
+                            删除
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setTagManageDialogOpen(false)}>
+              关闭
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 内容库/新闻内容对话框 */}
       <Dialog open={dialogOpen} onOpenChange={(open) => {
         setDialogOpen(open);
         if (!open) {
           resetImport();
           setCurrentTags([]);
           setTagInput("");
+          setCaseTagCandidate("");
         }
       }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {mainTab === "cases" ? "添加案例" : mainTab === "news" ? "发布新闻" : "添加内容"}
+              {mainTab === "cases" ? "添加内容" : mainTab === "news" ? "发布新闻" : "添加内容"}
             </DialogTitle>
             <DialogDescription>
               {mainTab === "cases" 
-                ? "填写客户案例信息，或从外部URL一键导入"
+                ? "填写内容信息并选择内容类型，或从外部URL一键导入"
                 : mainTab === "news"
                 ? "填写新闻内容，或从外部URL一键导入"
                 : "填写内容信息"}
@@ -3048,15 +3254,31 @@ export default function ContentManagement() {
                 </div>
               )}
 
-              {/* 案例库表单 */}
+              {/* 内容库表单 */}
               {mainTab === "cases" && (
                 <>
+                  <div className="space-y-2">
+                    <Label htmlFor="case-content-type">内容类型 *</Label>
+                    <Select
+                      value={formData.contentType}
+                      onValueChange={(value) => setFormData({ ...formData, contentType: value })}
+                    >
+                      <SelectTrigger id="case-content-type">
+                        <SelectValue placeholder="选择内容类型" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="solution">解决方案</SelectItem>
+                        <SelectItem value="case">案例</SelectItem>
+                        <SelectItem value="video">视频</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="case-title">案例标题 *</Label>
+                      <Label htmlFor="case-title">内容标题 *</Label>
                       <Input
                         id="case-title"
-                        placeholder="请输入案例标题"
+                        placeholder="请输入内容标题"
                         value={formData.title}
                         onChange={(e) => setFormData({...formData, title: e.target.value})}
                         required
@@ -3109,10 +3331,10 @@ export default function ContentManagement() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="case-summary">案例摘要 *</Label>
+                    <Label htmlFor="case-summary">内容摘要 *</Label>
                     <Textarea
                       id="case-summary"
-                        placeholder="请输入案例简介（100-200字）"
+                        placeholder="请输入内容简介（100-200字）"
                       rows={3}
                       value={formData.summary}
                       onChange={(e) => setFormData({...formData, summary: e.target.value})}
@@ -3121,10 +3343,10 @@ export default function ContentManagement() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="case-content">案例详情 *</Label>
+                    <Label htmlFor="case-content">内容详情 *</Label>
                     <Textarea
                       id="case-content"
-                      placeholder="请输入案例的详细内容，包括项目背景解决方案实施效果等"
+                      placeholder="请输入内容详情，包括背景、方案与效果等"
                       rows={12}
                       value={formData.content}
                       onChange={(e) => setFormData({...formData, content: e.target.value})}
@@ -3132,7 +3354,7 @@ export default function ContentManagement() {
                       className="font-mono text-sm"
                     />
                     <p className="text-xs text-gray-500">
-                      支持换行和段落格式，建议包含：项目背景解决方案实施过程实施效果等内容
+                      支持换行和段落格式，建议包含：背景、方案、实施与效果等内容
                     </p>
                   </div>
 
@@ -3141,30 +3363,25 @@ export default function ContentManagement() {
                     <Label htmlFor="case-tags">标签</Label>
                     <div className="space-y-2">
                       <div className="flex gap-2">
-                        <Input
-                          id="case-tags"
-                          placeholder="输入标签后按回车添加"
-                          value={tagInput}
-                          onChange={(e) => setTagInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              if (tagInput.trim() && !currentTags.includes(tagInput.trim())) {
-                                setCurrentTags([...currentTags, tagInput.trim()]);
-                                setTagInput("");
-                              }
-                            }
-                          }}
-                        />
+                        <Select value={caseTagCandidate} onValueChange={setCaseTagCandidate}>
+                          <SelectTrigger id="case-tags" className="flex-1">
+                            <SelectValue placeholder="选择标签编码" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {sharedContentProductTags
+                              .filter((tag) => !currentTags.includes(tag))
+                              .map((tag) => (
+                                <SelectItem key={tag} value={tag}>
+                                  {getCaseTagZh(tag)} ({tag})
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => {
-                            if (tagInput.trim() && !currentTags.includes(tagInput.trim())) {
-                              setCurrentTags([...currentTags, tagInput.trim()]);
-                              setTagInput("");
-                            }
-                          }}
+                          onClick={handleAddCaseTag}
+                          disabled={!caseTagCandidate}
                         >
                           <Plus className="h-4 w-4 mr-2" />
                           添加
@@ -3174,7 +3391,7 @@ export default function ContentManagement() {
                         <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border">
                           {currentTags.map((tag) => (
                             <Badge key={tag} variant="secondary" className="text-sm">
-                              {tag}
+                              {getCaseTagZh(tag)}
                               <X
                                 className="h-3 w-3 ml-1 cursor-pointer hover:text-red-600"
                                 onClick={() => setCurrentTags(currentTags.filter(t => t !== tag))}
@@ -3184,7 +3401,7 @@ export default function ContentManagement() {
                         </div>
                       )}
                       <p className="text-xs text-gray-500">
-                        例如：数字化转型、智能制造、文档管理
+                        通过“设置标签”维护编码和名称，这里仅选择已配置标签
                       </p>
                     </div>
                   </div>
@@ -4577,7 +4794,7 @@ export default function ContentManagement() {
           setProductEditDialogOpen(open);
           if (!open) {
             setEditingProductId(null);
-            setProductEditTagInput("");
+            setProductTagCandidate("");
             setProductEditTags([]);
           }
         }}
@@ -4715,32 +4932,25 @@ export default function ContentManagement() {
                 <Label htmlFor="edit-product-tags">标签</Label>
                 <div className="space-y-2">
                   <div className="flex gap-2">
-                    <Input
-                      id="edit-product-tags"
-                      placeholder="输入标签后按回车添加"
-                      value={productEditTagInput}
-                      onChange={(e) => setProductEditTagInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          const nextTag = productEditTagInput.trim();
-                          if (nextTag && !productEditTags.includes(nextTag)) {
-                            setProductEditTags([...productEditTags, nextTag]);
-                            setProductEditTagInput("");
-                          }
-                        }
-                      }}
-                    />
+                    <Select value={productTagCandidate} onValueChange={setProductTagCandidate}>
+                      <SelectTrigger id="edit-product-tags" className="flex-1">
+                        <SelectValue placeholder="选择标签编码" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sharedContentProductTags
+                          .filter((tag) => !productEditTags.includes(tag))
+                          .map((tag) => (
+                            <SelectItem key={tag} value={tag}>
+                              {getCaseTagZh(tag)} ({tag})
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => {
-                        const nextTag = productEditTagInput.trim();
-                        if (nextTag && !productEditTags.includes(nextTag)) {
-                          setProductEditTags([...productEditTags, nextTag]);
-                          setProductEditTagInput("");
-                        }
-                      }}
+                      onClick={handleAddProductTag}
+                      disabled={!productTagCandidate}
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       添加
@@ -4750,7 +4960,7 @@ export default function ContentManagement() {
                     <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border">
                       {productEditTags.map((tag) => (
                         <Badge key={tag} variant="secondary" className="text-sm">
-                          {tag}
+                          {getCaseTagZh(tag)}
                           <X
                             className="h-3 w-3 ml-1 cursor-pointer hover:text-red-600"
                             onClick={() => setProductEditTags(productEditTags.filter((t) => t !== tag))}
@@ -4981,6 +5191,7 @@ export default function ContentManagement() {
     </div>
   );
 }
+
 
 
 

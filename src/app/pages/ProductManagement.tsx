@@ -42,12 +42,27 @@ type Product = {
 
 type ProductForm = Omit<Product, "id">;
 
+const unifiedTagMap: Record<string, string> = {
+  color_mfp: "彩色多功能",
+  office: "办公场景",
+  mid_volume: "中等负载",
+  workgroup: "工作组",
+  high_volume: "高负载",
+  smart: "智能办公",
+  security: "安全管控",
+  energy_saving: "节能低碳",
+  premium: "高端方案",
+  production: "生产级输出",
+  enterprise: "企业级部署",
+};
+const unifiedTagKeys = Object.keys(unifiedTagMap);
+
 const mockProducts: Product[] = [
   {
     id: 1,
     name: "RICOH MP C3004 彩色多功能复合机",
     category: "打印设备",
-    tag: "热销",
+    tag: "office",
     price: 15999,
     stock: 48,
     status: "active",
@@ -61,7 +76,7 @@ const mockProducts: Product[] = [
     id: 2,
     name: "RICOH SP 330DN 黑白激光打印机",
     category: "打印设备",
-    tag: "新品",
+    tag: "smart",
     price: 2899,
     stock: 156,
     status: "active",
@@ -75,7 +90,7 @@ const mockProducts: Product[] = [
     id: 3,
     name: "理光原装碳粉盒 MP C3004",
     category: "打印耗材",
-    tag: "耗材",
+    tag: "production",
     price: 899,
     stock: 0,
     status: "inactive",
@@ -90,7 +105,7 @@ const mockProducts: Product[] = [
 const defaultForm: ProductForm = {
   name: "",
   category: "打印设备",
-  tag: "",
+  tag: "office",
   price: 0,
   stock: 0,
   status: "active",
@@ -157,6 +172,7 @@ export default function ProductManagement() {
     if (type === "full") return "全额积分抵扣";
     return "不可积分抵扣";
   };
+  const getTagLabel = (tag: string) => unifiedTagMap[tag] || tag || "-";
 
   return (
     <div className="space-y-6">
@@ -212,7 +228,7 @@ export default function ProductManagement() {
                     <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                     <div className="absolute top-2 right-2 flex gap-2">
                       {product.stock === 0 && <Badge variant="destructive">缺货</Badge>}
-                      {product.tag && <Badge variant="outline" className="bg-white">{product.tag}</Badge>}
+                      {product.tag && <Badge variant="outline" className="bg-white">{getTagLabel(product.tag)}</Badge>}
                     </div>
                   </div>
                   <CardContent className="p-4 space-y-3">
@@ -286,7 +302,16 @@ export default function ProductManagement() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="productTag">商品Tag</Label>
-                <Input id="productTag" value={form.tag} onChange={(e) => setForm((f) => ({ ...f, tag: e.target.value }))} placeholder="例如：新品/热销/推荐" />
+                <Select value={form.tag} onValueChange={(value) => setForm((f) => ({ ...f, tag: value }))}>
+                  <SelectTrigger id="productTag">
+                    <SelectValue placeholder="选择标签" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {unifiedTagKeys.map((tagKey) => (
+                      <SelectItem key={tagKey} value={tagKey}>{unifiedTagMap[tagKey]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

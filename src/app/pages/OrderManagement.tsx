@@ -61,6 +61,8 @@ type ContractFlowStatus =
   | "pending_merchant_sign"
   | "signed";
 
+type PaymentType = "alipay" | "wechat" | "";
+
 type OrderProduct = {
   sku: string;
   name: string;
@@ -84,6 +86,7 @@ type OrderItem = {
   hasStock: boolean | null;
   stockConfirmTime: string;
   stockConfirmNote: string;
+  paymentType: PaymentType;
   paymentTime: string;
   shippingCompany: string;
   trackingNo: string;
@@ -121,6 +124,7 @@ const mockOrders: OrderItem[] = [
     hasStock: true,
     stockConfirmTime: "2024-02-21 11:30",
     stockConfirmNote: "库存充足，可立即发货",
+    paymentType: "alipay",
     paymentTime: "2024-02-21 14:20",
     shippingCompany: "顺丰",
     trackingNo: "SF1234567890",
@@ -153,6 +157,7 @@ const mockOrders: OrderItem[] = [
     hasStock: true,
     stockConfirmTime: "2024-02-22 09:15",
     stockConfirmNote: "主机有货，配件齐全",
+    paymentType: "wechat",
     paymentTime: "2024-02-22 15:30",
     shippingCompany: "德邦",
     trackingNo: "DB9876543210",
@@ -182,6 +187,7 @@ const mockOrders: OrderItem[] = [
     hasStock: true,
     stockConfirmTime: "2024-02-22 14:20",
     stockConfirmNote: "有现货，已预留",
+    paymentType: "",
     paymentTime: "",
     shippingCompany: "",
     trackingNo: "",
@@ -211,6 +217,7 @@ const mockOrders: OrderItem[] = [
     hasStock: null,
     stockConfirmTime: "",
     stockConfirmNote: "",
+    paymentType: "",
     paymentTime: "",
     shippingCompany: "",
     trackingNo: "",
@@ -240,6 +247,7 @@ const mockOrders: OrderItem[] = [
     hasStock: false,
     stockConfirmTime: "2024-02-23 10:45",
     stockConfirmNote: "该型号暂时缺货，预计3周后到货",
+    paymentType: "",
     paymentTime: "",
     shippingCompany: "",
     trackingNo: "",
@@ -269,6 +277,7 @@ const mockOrders: OrderItem[] = [
     hasStock: null,
     stockConfirmTime: "",
     stockConfirmNote: "",
+    paymentType: "",
     paymentTime: "",
     shippingCompany: "",
     trackingNo: "",
@@ -298,6 +307,7 @@ const mockOrders: OrderItem[] = [
     hasStock: true,
     stockConfirmTime: "2024-02-25 09:20",
     stockConfirmNote: "库存已确认，等待仓库出库",
+    paymentType: "alipay",
     paymentTime: "2024-02-25 10:05",
     shippingCompany: "",
     trackingNo: "",
@@ -327,6 +337,7 @@ const mockOrders: OrderItem[] = [
     hasStock: null,
     stockConfirmTime: "",
     stockConfirmNote: "",
+    paymentType: "",
     paymentTime: "",
     shippingCompany: "",
     trackingNo: "",
@@ -362,14 +373,21 @@ const contractFlowLabelMap: Record<ContractFlowStatus, string> = {
   signed: "已完成签署",
 };
 
+const paymentTypeLabelMap: Record<Exclude<PaymentType, "">, string> = {
+  alipay: "支付宝在线支付",
+  wechat: "微信在线支付",
+};
+
 export default function OrderManagement() {
   const [orders, setOrders] = useState<OrderItem[]>(mockOrders);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [detailDialog, setDetailDialog] = useState(false);
+  const [paymentDialog, setPaymentDialog] = useState(false);
   const [shippingDialog, setShippingDialog] = useState(false);
   const [invoiceDialog, setInvoiceDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
+  const [paymentForm, setPaymentForm] = useState<{ paymentType: Exclude<PaymentType, ""> }>({ paymentType: "alipay" });
   const [shippingForm, setShippingForm] = useState({ shippingCompany: "", trackingNo: "" });
   const [invoiceForm, setInvoiceForm] = useState({ invoiceNo: "", invoiceFileUrl: "", remark: "" });
 
@@ -424,6 +442,30 @@ export default function OrderManagement() {
     setSelectedOrder(order);
     setShippingForm({ shippingCompany: order.shippingCompany || "", trackingNo: order.trackingNo || "" });
     setShippingDialog(true);
+  };
+
+  const handleOpenPaymentDialog = (order: OrderItem) => {
+    setSelectedOrder(order);
+    setPaymentForm({ paymentType: "alipay" });
+    setPaymentDialog(true);
+  };
+
+  const handleSubmitPayment = () => {
+    if (!selectedOrder) return;
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === selectedOrder.id
+          ? {
+              ...order,
+              status: "paid",
+              paymentType: paymentForm.paymentType,
+              paymentTime: now(),
+            }
+          : order,
+      ),
+    );
+    setPaymentDialog(false);
+    setDetailDialog(false);
   };
 
   const handleSubmitShipping = () => {
@@ -522,6 +564,7 @@ export default function OrderManagement() {
       "合同状态": contractFlowLabelMap[order.contractFlowStatus],
       "订单状态": orderStatusMap[order.status].label,
       "订单金额": `¥${order.totalAmount.toLocaleString()}`,
+      "支付类型": order.paymentType ? paymentTypeLabelMap[order.paymentType as Exclude<PaymentType, "">] : "-",
       "付款时间": order.paymentTime || "-",
       "发货时间": order.shippingTime || "-",
       "收货时间": order.receivedTime || "-",
@@ -566,8 +609,8 @@ export default function OrderManagement() {
               <ul className="text-sm text-blue-800 mt-2 space-y-1 list-disc list-inside">
                 <li>待客户签署：创建订单 + 需要合同</li>
                 <li>待商家签署：需要合同 + 客户签署</li>
-                <li>待付款：无需合同 或 双签确认完成</li>
-                <li>已付款：已上传付款凭证</li>
+                <li>待付款：无需合同 或 双签确认完成，等待在线支付</li>
+                <li>已付款：支付宝/微信在线支付成功</li>
                 <li>已发货：已填写物流单号</li>
                 <li>已完成：已确认收货</li>
                 <li>已取消：订单取消或缺货关闭</li>
@@ -622,6 +665,7 @@ export default function OrderManagement() {
                     <TableHead>客户</TableHead>
                     <TableHead>经销商</TableHead>
                     <TableHead>金额</TableHead>
+                    <TableHead>支付类型</TableHead>
                     <TableHead>合同</TableHead>
                     <TableHead>状态</TableHead>
                     <TableHead>下单时间</TableHead>
@@ -637,6 +681,7 @@ export default function OrderManagement() {
                         <TableCell><div className="font-medium">{order.customerName}</div><div className="text-xs text-gray-500 flex items-center gap-1"><MapPin className="h-3 w-3" />{order.customerCity}</div></TableCell>
                         <TableCell><div className="text-sm">{order.dealerName}</div><div className="text-xs text-gray-500">{order.dealerContact}</div></TableCell>
                         <TableCell className="font-semibold text-green-600">¥{order.totalAmount.toLocaleString()}</TableCell>
+                        <TableCell className="text-sm">{order.paymentType ? paymentTypeLabelMap[order.paymentType as Exclude<PaymentType, "">] : "-"}</TableCell>
                         <TableCell><Badge variant={order.requiresContract ? "default" : "secondary"}>{order.requiresContract ? "需要合同" : "无需合同"}</Badge></TableCell>
                         <TableCell><Badge variant={orderStatusMap[order.status].variant} className="gap-1"><StatusIcon className="h-3 w-3" />{orderStatusMap[order.status].label}</Badge></TableCell>
                         <TableCell className="text-sm">{order.createTime}</TableCell>
@@ -666,6 +711,7 @@ export default function OrderManagement() {
                 <div className="flex gap-3">
                   {selectedOrder.status === "pending_customer_sign" && <Button onClick={() => handleCustomerSignedContract(selectedOrder.id)}><FileText className="h-4 w-4 mr-2" />客户已签署</Button>}
                   {selectedOrder.status === "pending_merchant_sign" && <Button onClick={() => handleMerchantSignedContract(selectedOrder.id)}><Edit className="h-4 w-4 mr-2" />商家已签署</Button>}
+                  {selectedOrder.status === "pending_payment" && <Button onClick={() => handleOpenPaymentDialog(selectedOrder)}><DollarSign className="h-4 w-4 mr-2" />模拟在线支付</Button>}
                   {selectedOrder.status === "paid" && <Button onClick={() => handleOpenShippingDialog(selectedOrder)}><Truck className="h-4 w-4 mr-2" />填写物流</Button>}
                   {(selectedOrder.status === "paid" || selectedOrder.status === "shipped" || selectedOrder.status === "completed") && (
                     <Button variant="outline" onClick={() => handleOpenInvoiceDialog(selectedOrder)}><Upload className="h-4 w-4 mr-2" />上传电子发票</Button>
@@ -700,7 +746,7 @@ export default function OrderManagement() {
                   {selectedOrder.contractCustomerSignTime && <div className="p-3 bg-gray-50 rounded">客户签署完成：{selectedOrder.contractCustomerSignTime}</div>}
                   {selectedOrder.contractMerchantSignTime && <div className="p-3 bg-gray-50 rounded">商家签署完成：{selectedOrder.contractMerchantSignTime}</div>}
                   {selectedOrder.stockConfirmTime && <div className="p-3 bg-gray-50 rounded">库存确认：{selectedOrder.stockConfirmTime}（{selectedOrder.stockConfirmNote}）</div>}
-                  {selectedOrder.paymentTime && <div className="p-3 bg-gray-50 rounded">客户付款：{selectedOrder.paymentTime}</div>}
+                  {selectedOrder.paymentTime && <div className="p-3 bg-gray-50 rounded">客户付款：{selectedOrder.paymentType ? paymentTypeLabelMap[selectedOrder.paymentType as Exclude<PaymentType, "">] : "在线支付"}（{selectedOrder.paymentTime}）</div>}
                   {selectedOrder.shippingTime && <div className="p-3 bg-gray-50 rounded">发货：{selectedOrder.shippingCompany} - {selectedOrder.trackingNo}（{selectedOrder.shippingTime}）</div>}
                   {selectedOrder.invoiceUploadTime && <div className="p-3 bg-gray-50 rounded">电子发票上传：{selectedOrder.invoiceNo}（{selectedOrder.invoiceUploadTime}）</div>}
                   {selectedOrder.receivedTime && <div className="p-3 bg-gray-50 rounded">确认收货：{selectedOrder.receivedTime}</div>}
@@ -709,6 +755,36 @@ export default function OrderManagement() {
             </div>
           )}
           <DialogFooter><Button variant="outline" onClick={() => setDetailDialog(false)}>关闭</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={paymentDialog} onOpenChange={setPaymentDialog}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>在线支付</DialogTitle>
+            <DialogDescription>支持支付宝、微信在线支付，支付成功后订单将进入“已付款”。</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>支付类型 *</Label>
+              <Select
+                value={paymentForm.paymentType}
+                onValueChange={(v) => setPaymentForm({ paymentType: v as Exclude<PaymentType, ""> })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="选择支付方式" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="alipay">支付宝在线支付</SelectItem>
+                  <SelectItem value="wechat">微信在线支付</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPaymentDialog(false)}>取消</Button>
+            <Button onClick={handleSubmitPayment}>确认支付成功</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

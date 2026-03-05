@@ -38,6 +38,10 @@ export const router = createBrowserRouter([
         path: "chatbot",
         lazy: async () => ({ Component: (await import("./pages/ChatbotManagement")).default }),
       },
+      {
+        path: "dealers",
+        lazy: async () => ({ Component: (await import("./pages/DealerManagement")).default }),
+      },
     ],
   },
 ]);
